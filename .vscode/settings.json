@@ -1,0 +1,15 @@
+{
+    "sqltools.connections": [
+        {
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "mac-mini-de-christophe.tailbf2a66.ts.net",
+            "port": 5432,
+            "askForPassword": true,
+            "driver": "PostgreSQL",
+            "name": "Mon_Serveur_M4",
+            "database": "DIGITAL_TEST",
+            "username": "kurisu"
+        }
+    ]
+}
