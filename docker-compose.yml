@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    container_name: web-nathanael-api
+    ports:
+      - "3000:3000"
+    environment:
+      DB_SERVER: "mac-mini-de-christophe.tailbf2a66.ts.net"
+      DB_USER: "sa"
+      DB_PASSWORD: "@1887Snoopy!"
+      DB_DATABASE: "WEB_NATHANAEL"
+      DB_PORT: "1433"
+      EMAIL_PASSWORD: "@1887Snoopy!"
+    restart: unless-stopped
+    networks:
+      - web-nathanael-network
+
+networks:
+  web-nathanael-network:
+    driver: bridge

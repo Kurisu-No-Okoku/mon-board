@@ -1,0 +1,634 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Board de Nathanaël</title>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      :root {
+        --bg-color: #12141a;
+        --text-color: #eef1f6;
+        --subtext-color: #c9d4e1;
+        --panel-bg: rgba(255, 255, 255, 0.04);
+        --panel-border: rgba(255, 255, 255, 0.08);
+        --panel-heading-color: #f7fbff;
+        --panel-text-color: #d7dde6;
+        --header-start: #3f5165;
+        --header-end: #354458;
+        --button-bg: #273343;
+        --button-text: #eef1f6;
+        --btn-hover: #3a516d;
+        --accent: #8aa5c3;
+      }
+
+      .light-theme {
+        --bg-color: #e9edf3;
+        --text-color: #1f2937;
+        --subtext-color: #1f2937;
+        --panel-bg: rgba(255, 255, 255, 0.9);
+        --panel-border: rgba(26, 32, 44, 0.16);
+        --panel-heading-color: #1f2937;
+        --panel-text-color: #1f2937;
+        --header-start: #d2dae7;
+        --header-end: #bac7d8;
+        --button-bg: #ffffff;
+        --button-text: #1f2937;
+        --btn-hover: #cbd5e1;
+        --accent: #718096;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: 'Segoe UI', Arial, sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        padding-bottom: 60px;
+      }
+
+      .page-wrapper {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        position: relative;
+      }
+
+      .top-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        margin-bottom: 20px;
+        gap: 15px;
+      }
+
+      .theme-toggle,
+      .user-actions {
+        display: flex;
+        flex-direction: row;
+        gap: 10px;
+        flex-shrink: 0;
+        z-index: 10;
+      }
+
+      .theme-toggle-button {
+        width: 42px;
+        min-width: 42px;
+        height: 42px;
+        border: 2px solid transparent;
+        border-radius: 12px;
+        background-color: rgba(255, 255, 255, 0.12);
+        color: var(--text-color);
+        cursor: pointer;
+        font-size: 1.1rem;
+        transition: transform 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
+      }
+
+      .theme-toggle-button:hover {
+        transform: translateY(-1px);
+        background-color: rgba(255, 255, 255, 0.16);
+      }
+
+      .theme-toggle-button.active {
+        background-color: var(--accent);
+        border-color: rgba(255, 255, 255, 0.52);
+        color: var(--button-text);
+      }
+
+      .page-wrapper-content {
+        flex: 1;
+      }
+
+      .page-header {
+        width: 100%;
+        background: linear-gradient(180deg, var(--header-start) 0%, var(--header-end) 100%);
+        color: var(--text-color);
+        padding: 18px 20px;
+        border-radius: 18px;
+        margin-bottom: 22px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        text-align: center;
+      }
+
+      .page-header h1 {
+        margin: 0;
+        font-size: clamp(2rem, 2.6vw, 3rem);
+        letter-spacing: 0.02em;
+      }
+
+      .page-header p {
+        margin: 10px 0 0;
+        color: var(--subtext-color);
+        font-size: 1rem;
+      }
+
+      .page-footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(180deg, var(--header-end) 0%, var(--header-start) 100%);
+        color: var(--text-color);
+        padding: 12px 20px;
+        text-align: center;
+        font-size: 0.85rem;
+        box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.18);
+        z-index: 100;
+      }
+
+      .page-footer p {
+        margin: 0;
+        color: var(--subtext-color);
+      }
+
+      .category-nav {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-bottom: 18px;
+        align-items: center;
+      }
+
+      .home-button {
+        flex: 0 0 auto;
+        padding: 12px 16px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        border: 2px solid transparent;
+        border-radius: 14px;
+        color: var(--button-text);
+        background-color: var(--button-bg);
+        cursor: pointer;
+        transition: all 180ms ease;
+      }
+
+      .home-button:hover {
+        background-color: #334155;
+      }
+
+      .category-button {
+        flex: 1 1 180px;
+        min-width: 170px;
+        padding: 14px 18px;
+        font-size: 1rem;
+        font-weight: 700;
+        border: 2px solid transparent;
+        border-radius: 14px;
+        color: var(--button-text);
+        background-color: var(--button-bg);
+        cursor: pointer;
+        transition: all 180ms ease;
+      }
+
+      .category-button:hover {
+        background-color: var(--btn-hover);
+      }
+
+      .category-button.active,
+      .home-button.active {
+        background-color: var(--accent);
+        color: var(--text-color);
+        border-color: rgba(255, 255, 255, 0.52);
+      }
+
+      .category-panel {
+        background-color: var(--panel-bg);
+        border: 1px solid var(--panel-border);
+        border-radius: 20px;
+        padding: 24px;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+      }
+
+      .category-panel h2 {
+        margin: 0 0 10px;
+        font-size: 1.8rem;
+        color: var(--panel-heading-color);
+      }
+
+      .category-panel p {
+        margin: 0 0 22px;
+        color: var(--panel-text-color);
+        line-height: 1.65;
+      }
+
+      .actions-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        justify-content: center;
+      }
+
+      .action-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px 22px;
+        min-width: 210px;
+        border-radius: 14px;
+        text-decoration: none;
+        font-weight: 700;
+        transition: transform 0.18s ease, background-color 0.18s ease;
+      }
+
+      .action-link:hover {
+        transform: translateY(-2px);
+      }
+
+      .action-list {
+        background-color: #2f5278;
+        color: #f8fbff;
+      }
+
+      .action-board {
+        background-color: #4f8b5e;
+        color: #f8fbff;
+      }
+
+      .action-disabled {
+        background-color: rgba(255, 255, 255, 0.08);
+        color: #94a2b6;
+        cursor: default;
+      }
+
+      .construction-panel {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 300px;
+        text-align: center;
+      }
+
+      .construction-content {
+        background-color: var(--panel-bg);
+        border: 2px solid var(--panel-border);
+        border-radius: 20px;
+        padding: 48px 40px;
+        max-width: 500px;
+      }
+
+      .construction-content h3 {
+        margin: 0 0 16px;
+        font-size: 2rem;
+        color: var(--panel-heading-color);
+      }
+
+      .construction-content p {
+        margin: 0 0 24px;
+        color: var(--panel-text-color);
+        font-size: 1.1rem;
+        line-height: 1.6;
+      }
+
+      .construction-emoji {
+        font-size: 3rem;
+        margin-bottom: 20px;
+      }
+
+      @media (max-width: 730px) {
+        .page-wrapper {
+          gap: 0;
+        }
+
+        .top-controls {
+          margin-bottom: 15px;
+        }
+
+        .category-nav {
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .category-nav .category-button,
+        .category-nav .home-button {
+          width: 100%;
+          min-width: unset;
+          flex: none;
+        }
+
+        .action-link {
+          width: 100%;
+        }
+
+        .construction-content {
+          padding: 32px 24px;
+        }
+
+        .construction-content h3 {
+          font-size: 1.5rem;
+        }
+
+        .construction-emoji {
+          font-size: 2rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page-wrapper">
+      <div class="top-controls">
+        <div class="theme-toggle" id="theme-toggle-container" aria-label="Toggle thème clair ou sombre" style="display: none;">
+          <button type="button" class="theme-toggle-button active" data-theme="dark" aria-label="Thème sombre">🌙</button>
+          <button type="button" class="theme-toggle-button" data-theme="light" aria-label="Thème clair">☀️</button>
+        </div>
+        <div class="user-actions" id="user-actions" style="display: none;">
+          <button type="button" id="account-button" class="theme-toggle-button" aria-label="Mon compte">👤</button>
+          <button type="button" id="logout-button" class="theme-toggle-button" aria-label="Se déconnecter" style="background-color: rgba(255, 77, 77, 0.15); border-color: rgba(255, 77, 77, 0.3);">🚪</button>
+        </div>
+      </div>
+
+      <div class="page-wrapper-content">
+        <header class="page-header">
+          <h1>Board de Nathanaël</h1>
+          <p id="welcome-message" style="display: none;"></p>
+        </header>
+
+      <!-- Section Login -->
+      <section id="login-section" class="category-panel" style="text-align: center; margin-bottom: 22px; max-width: 450px; margin-left: auto; margin-right: auto;">
+        <h2>Connexion</h2>
+        <div id="login-controls" style="max-width: 320px; margin: 0 auto;">
+          <input type="text" id="login-input" placeholder="Saisir votre login" style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--panel-border); background: var(--button-bg); color: var(--text-color); margin-bottom: 12px; font-size: 1rem; outline: none;">
+          <button type="button" id="login-submit" class="category-button" style="width: 100%; margin: 0;">Se connecter</button>
+          <p id="login-error" style="color: #ff4d4d; margin-top: 15px; display: none; font-weight: bold;">L'utilisateur n'est pas reconnu</p>
+          <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--panel-border);">
+          <button type="button" id="toggle-activation" style="background: none; border: none; color: var(--accent); cursor: pointer; text-decoration: underline; font-size: 0.9rem;">Activer votre compte</button>
+        </div>
+
+        <div id="activation-controls" style="max-width: 320px; margin: 0 auto; display: none;">
+          <input type="text" id="activate-login" placeholder="Choisissez un login" style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--panel-border); background: var(--button-bg); color: var(--text-color); margin-bottom: 12px; font-size: 1rem; outline: none;">
+          <input type="email" id="activate-email" placeholder="Saisissez votre e-mail" style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--panel-border); background: var(--button-bg); color: var(--text-color); margin-bottom: 12px; font-size: 1rem; outline: none;">
+          <button type="button" id="activation-submit" class="category-button" style="width: 100%; margin: 0 0 12px 0; background-color: var(--header-start);">Soumettre la demande d'activation</button>
+          <button type="button" id="back-to-login" style="background: none; border: none; color: var(--subtext-color); cursor: pointer; font-size: 0.85rem;">Retour à la connexion</button>
+        </div>
+      </section>
+
+      <nav class="category-nav" aria-label="Navigation des catégories" style="display: none;">
+        <button type="button" class="home-button active" data-category="accueil">🏠 Accueil</button>
+        <button type="button" class="category-button" data-category="orthophoniste">Orthophoniste</button>
+        <button type="button" class="category-button" data-category="sessad">Sessad</button>
+        <button type="button" class="category-button" data-category="dispositif-ulis">Dispositif ULIS</button>
+        <button type="button" class="category-button" data-category="maison">Maison</button>
+      </nav>
+
+      <section class="category-panel" id="category-panel" style="display: none;">
+        <div id="accueil-panel" class="construction-panel" style="display: none;">
+          <div class="construction-content">
+            <div class="construction-emoji">🚧</div>
+            <h3>En construction</h3>
+            <p>Cette section est actuellement en cours de développement. Revenez bientôt!</p>
+          </div>
+        </div>
+
+        <div id="content-panel">
+          <h2 id="category-title">Orthophoniste</h2>
+          <p id="category-description">Choisissez une option pour l'orthophoniste. Ces actions restent disponibles sans changer de page.</p>
+
+          <div id="category-actions" class="actions-row" style="display: none;">
+            <a href="https://acrobat.adobe.com/id/urn:aaid:sc:EU:3340a9d1-c9ca-4db3-84e0-0debdf3a5519" target="_blank" class="action-link action-list">
+              📖 Liste de mots
+            </a>
+            <a href="https://www.icloud.com/numbers/078XYEvcNr5E7BLiCEQUM1Vyw#Répéter_10_Mots_par_jours" target="_blank" class="action-link action-board">
+              📊 Voir le board (mise à jour en direct)
+            </a>
+          </div>
+        </div>
+      </section>
+
+    <footer class="page-footer">
+      <p>© 2026 Christophe Lambert • v1.4.4</p>
+    </footer>
+
+    <script>
+      const categories = {
+        orthophoniste: {
+          title: 'Orthophoniste',
+          description: 'La catégorie Orthophoniste affiche les actions principales pour le suivi et la mise à jour du board.',
+          actionsVisible: true
+        },
+        sessad: {
+          title: 'Sessad',
+          description: 'Bienvenue dans la catégorie Sessad. Les boutons principaux restent visibles en haut pour naviguer facilement.',
+          actionsVisible: false
+        },
+        'dispositif-ulis': {
+          title: 'Dispositif ULIS',
+          description: 'Vous êtes dans Dispositif ULIS. Le titre principal reste en place pour donner l’impression d’une même page.',
+          actionsVisible: false
+        },
+        maison: {
+          title: 'Maison',
+          description: 'Catégorie Maison sélectionnée. Utilisez les boutons de navigation pour revenir à Orthophoniste ou aux autres catégories.',
+          actionsVisible: false
+        },
+        accueil: {
+          title: 'Accueil',
+          description: 'Accueil en construction.',
+          actionsVisible: false
+        }
+      };
+
+      const titleElement = document.getElementById('category-title');
+      const descriptionElement = document.getElementById('category-description');
+      const actionsElement = document.getElementById('category-actions');
+      const buttons = document.querySelectorAll('.category-button, .home-button');
+      const defaultCategory = 'accueil';
+      const themeButtons = document.querySelectorAll('.theme-toggle-button');
+      const themeRoot = document.documentElement;
+
+      const accueilPanel = document.getElementById('accueil-panel');
+      const contentPanel = document.getElementById('content-panel');
+
+      // Éléments Login
+      const loginSection = document.getElementById('login-section');
+      const loginInput = document.getElementById('login-input');
+      const loginSubmit = document.getElementById('login-submit');
+      const loginError = document.getElementById('login-error');
+      const loginControls = document.getElementById('login-controls');
+      const welcomeMsg = document.getElementById('welcome-message');
+      
+      // Activation
+      const toggleActivation = document.getElementById('toggle-activation');
+      const activationControls = document.getElementById('activation-controls');
+      const backToLogin = document.getElementById('back-to-login');
+      const activationSubmit = document.getElementById('activation-submit');
+
+      const accountButton = document.getElementById('account-button');
+      const logoutButton = document.getElementById('logout-button');
+      const userActions = document.getElementById('user-actions');
+      const themeToggle = document.getElementById('theme-toggle-container');
+      const categoryNav = document.querySelector('.category-nav');
+
+      const loadButtonLabels = async () => {
+        try {
+          const response = await fetch('/api/buttons');
+          if (!response.ok) {
+            throw new Error('Réponse API non valide');
+          }
+          const labels = await response.json();
+
+          labels.forEach(item => {
+            const button = document.querySelector(`[data-category="${CSS.escape(item.ButtonKey)}"]`);
+            if (button) {
+              button.textContent = item.ButtonText;
+            }
+          });
+        } catch (error) {
+          console.warn('Impossible de charger les libellés de boutons depuis la BDD :', error);
+        }
+      };
+
+      const setCategory = (key) => {
+        const category = categories[key];
+
+        if (key !== 'orthophoniste') {
+          accueilPanel.style.display = 'flex';
+          contentPanel.style.display = 'none';
+        } else {
+          accueilPanel.style.display = 'none';
+          contentPanel.style.display = 'block';
+          titleElement.textContent = category.title;
+          descriptionElement.textContent = category.description;
+          actionsElement.style.display = category.actionsVisible ? 'flex' : 'none';
+        }
+      };
+
+      const setTheme = (theme) => {
+        if (theme === 'light') {
+          themeRoot.classList.add('light-theme');
+          themeButtons.forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.theme === 'light');
+          });
+        } else {
+          themeRoot.classList.remove('light-theme');
+          themeButtons.forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.theme === 'dark');
+          });
+        }
+      };
+
+      // Validation du login avec la touche Entrée
+      loginInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          loginSubmit.click();
+        }
+      });
+
+      // Gestion bouton Compte
+      accountButton.addEventListener('click', () => {
+        alert(`Utilisateur connecté : ${loginInput.value}`);
+      });
+
+      // Toggle Activation/Login
+      toggleActivation.addEventListener('click', () => {
+        loginControls.style.display = 'none';
+        activationControls.style.display = 'block';
+        const title = loginSection.querySelector('h2');
+        if (title) title.textContent = 'Activation';
+      });
+
+      backToLogin.addEventListener('click', () => {
+        loginControls.style.display = 'block';
+        activationControls.style.display = 'none';
+        const title = loginSection.querySelector('h2');
+        if (title) title.textContent = 'Connexion';
+      });
+
+      // Soumission Activation
+      activationSubmit.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const loginVal = document.getElementById('activate-login').value.trim();
+        const emailVal = document.getElementById('activate-email').value.trim();
+
+        if (!loginVal || !emailVal) {
+          alert('Veuillez remplir tous les champs.');
+          return;
+        }
+
+        try {
+          activationSubmit.disabled = true;
+          activationSubmit.textContent = 'Envoi en cours...';
+
+          const response = await fetch('/api/activate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ login: loginVal, email: emailVal })
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Erreur serveur');
+          }
+
+          alert(`Demande envoyée !\nUn e-mail a été envoyé à l'administrateur et une confirmation à ${emailVal}.`);
+          backToLogin.click();
+        } catch (err) {
+          console.error('Erreur activation:', err);
+          alert(`Erreur : ${err.message}`);
+        } finally {
+          activationSubmit.disabled = false;
+          activationSubmit.textContent = "Soumettre la demande d'activation";
+        }
+      });
+
+      // Logique de connexion
+      loginSubmit.addEventListener('click', () => {
+        const user = loginInput.value.trim();
+        if (user.toLowerCase() === 'admin') {
+          welcomeMsg.textContent = `Bienvenue ${user}`;
+          welcomeMsg.style.display = 'block';
+
+          loginSection.style.display = 'none';
+          themeToggle.style.display = 'flex';
+          categoryNav.style.display = 'flex';
+          document.getElementById('category-panel').style.display = 'block';
+          userActions.style.display = 'flex';
+          setCategory(defaultCategory);
+        } else {
+          loginError.style.display = 'block';
+        }
+      });
+
+      // Logique de déconnexion
+      logoutButton.addEventListener('click', () => {
+        loginSection.style.display = 'block';
+        themeToggle.style.display = 'none';
+        userActions.style.display = 'none';
+        categoryNav.style.display = 'none';
+        document.getElementById('category-panel').style.display = 'none';
+        welcomeMsg.style.display = 'none';
+        loginInput.value = '';
+        loginError.style.display = 'none';
+      });
+
+      setTheme('dark');
+      loadButtonLabels();
+
+      buttons.forEach(button => {
+        button.addEventListener('click', () => {
+          buttons.forEach(btn => btn.classList.remove('active'));
+          button.classList.add('active');
+
+          const key = button.dataset.category;
+          setCategory(key);
+        });
+      });
+
+      themeButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          setTheme(button.dataset.theme);
+        });
+      });
+    </script>
+  </body>
+</html>
