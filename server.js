@@ -8,8 +8,8 @@ const port = process.env.PORT || 3000;
 const host = '100.99.13.22';
 
 const dbConfig = {
-  user: process.env.DB_USER || 'sa',
-  password: process.env.DB_PASSWORD || '@1887Snoopy!',
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
   server: process.env.DB_SERVER || host,
   database: process.env.DB_DATABASE || 'WEB_NATHANAEL',
   port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 1433,
@@ -90,6 +90,30 @@ app.post('/api/buttons', async (req, res) => {
   }
 });
 
+app.post('/api/login', async (req, res) => {
+  const { username } = req.body;
+
+  if (!username) {
+    return res.status(400).json({ error: 'Nom d\'utilisateur requis.' });
+  }
+
+  try {
+    await poolConnect;
+    const result = await pool.request()
+      .input('username', sql.NVarChar, username)
+      .query('SELECT UserID, Username, Role FROM Utilisateurs WHERE Username = @username');
+
+    if (result.recordset.length > 0) {
+      res.json(result.recordset[0]);
+    } else {
+      res.status(401).json({ error: 'Utilisateur non reconnu' });
+    }
+  } catch (error) {
+    console.error('API /api/login error:', error);
+    res.status(500).json({ error: 'Erreur lors de la vérification de l\'utilisateur.' });
+  }
+});
+
 app.post('/api/activate', async (req, res) => {
   const { login, email } = req.body;
 
@@ -98,7 +122,21 @@ app.post('/api/activate', async (req, res) => {
   }
 
   try {
-    // 1. Mail pour l'administrateur
+    // 1. Insertion en base de données
+    await poolConnect;
+    await pool.request()
+      .input('login', sql.NVarChar, login)
+      .input('email', sql.NVarChar, email)
+      .query(`
+        INSERT INTO [dbo].[Utilisateurs] 
+          (Username, Email, PasswordHash, Role, MustResetPassword, UserCreatedBy, LastModificationUserBy)
+        VALUES 
+          (@login, @email, 'WAITING_FOR_HASH', 'User', 1, @login, @login)
+      `);
+
+    console.log(`Utilisateur ${login} inséré en base (en attente).`);
+
+    // 2. Mail pour l'administrateur
     const adminMailOptions = {
       from: 'oldvivaldi@gmail.com',
       to: 'oldvivaldi@gmail.com',
@@ -106,7 +144,7 @@ app.post('/api/activate', async (req, res) => {
       text: `Bonjour,\n\nL'utilisateur "${login}" souhaite activer son compte.\nEmail de contact : ${email}\n\nCordialement.`
     };
 
-    // 2. Mail de confirmation pour l'utilisateur
+    // 3. Mail de confirmation pour l'utilisateur
     const userMailOptions = {
       from: 'oldvivaldi@gmail.com',
       to: email,
@@ -118,9 +156,9 @@ app.post('/api/activate', async (req, res) => {
     await transporter.sendMail(adminMailOptions);
     await transporter.sendMail(userMailOptions);
 
-    res.json({ message: 'Demandes envoyées avec succès.' });
+    res.json({ message: 'Compte créé en attente et e-mails envoyés.' });
   } catch (error) {
-    console.error('Erreur Nodemailer:', error);
+    console.error('Erreur API /api/activate:', error);
     res.status(500).json({ error: 'Erreur lors de l\'envoi des e-mails.' });
   }
 });

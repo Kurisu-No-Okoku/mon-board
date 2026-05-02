@@ -581,20 +581,40 @@
         }
       });
 
-      // Logique de connexion
-      loginSubmit.addEventListener('click', () => {
-        const user = loginInput.value.trim();
-        if (user.toLowerCase() === 'admin') {
-          welcomeMsg.textContent = `Bienvenue ${user}`;
-          welcomeMsg.style.display = 'block';
+      const loginUser = (username) => {
+        welcomeMsg.textContent = `Bienvenue ${username}`;
+        welcomeMsg.style.display = 'block';
+        loginSection.style.display = 'none';
+        themeToggle.style.display = 'flex';
+        categoryNav.style.display = 'flex';
+        document.getElementById('category-panel').style.display = 'block';
+        userActions.style.display = 'flex';
+        localStorage.setItem('currentUser', username);
+        setCategory(defaultCategory);
+      };
 
-          loginSection.style.display = 'none';
-          themeToggle.style.display = 'flex';
-          categoryNav.style.display = 'flex';
-          document.getElementById('category-panel').style.display = 'block';
-          userActions.style.display = 'flex';
-          setCategory(defaultCategory);
-        } else {
+      // Logique de connexion
+      loginSubmit.addEventListener('click', async () => {
+        const username = loginInput.value.trim();
+        if (!username) return;
+
+        loginError.style.display = 'none';
+
+        try {
+          const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username })
+          });
+
+          if (response.ok) {
+            const user = await response.json();
+            loginUser(user.Username);
+          } else {
+            loginError.style.display = 'block';
+          }
+        } catch (err) {
+          console.error('Erreur login:', err);
           loginError.style.display = 'block';
         }
       });
@@ -608,8 +628,15 @@
         document.getElementById('category-panel').style.display = 'none';
         welcomeMsg.style.display = 'none';
         loginInput.value = '';
+        localStorage.removeItem('currentUser');
         loginError.style.display = 'none';
       });
+
+      // Vérification session au chargement
+      const savedUser = localStorage.getItem('currentUser');
+      if (savedUser) {
+        loginUser(savedUser);
+      }
 
       setTheme('dark');
       loadButtonLabels();
