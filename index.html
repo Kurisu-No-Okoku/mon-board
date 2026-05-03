@@ -347,6 +347,7 @@
       .btn-resend:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15); }
       .btn-resend:disabled { opacity: 0.5; cursor: not-allowed; }
 
+      /* Styles spécifiques pour le tableau de données Orthophoniste */
       .data-table {
         width: 100%;
         border-collapse: collapse;
@@ -379,6 +380,28 @@
       #ortho-data-container {
         margin-top: 25px;
         animation: fadeIn 0.3s ease-out;
+      }
+
+      #mots-table-container {
+        margin-top: 25px;
+        animation: fadeIn 0.3s ease-out;
+        background-color: var(--panel-bg);
+        border: 1px solid var(--panel-border);
+        border-radius: 12px;
+        padding: 15px;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+      }
+
+
+      /* Styles pour le message "En construction" */
+      .construction-panel {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 300px;
+        text-align: center;
+        background-color: var(--panel-bg);
+        border-radius: 20px;
       }
 
       @media (max-width: 730px) {
@@ -486,16 +509,33 @@
         <div id="accueil-panel" style="display: none; flex-direction: column;">
           <div style="text-align: left;">
             <h2 style="margin-bottom: 20px;">📢 Notes de version</h2>
+
             <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 30px;">
-              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.7.3 - Orthophoniste & Import Fix</h3>
+              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.7.5 - Navigation & UI Fixes</h3>
               <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 3 Mai 2026</p>
               <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
-                <li><b>UI :</b> Finalisation de l'affichage dynamique des mots et du suivi orthophoniste.</li>
-                <li><b>Import :</b> Nouveau parser CSV ultra-robuste capable de détecter la date n'importe où dans la ligne.</li>
-                <li><b>Admin :</b> Affichage complet des informations de compte incluant l'adresse e-mail.</li>
+                <li><b>Fix (Navigation) :</b> Correction de la logique d'affichage des catégories pour éviter les retours inattendus à l'accueil.</li>
+                <li><b>Fix (UI) :</b> Amélioration du style et du centrage du bouton de réinitialisation de mot de passe dans la modale "Mon Compte".</li>
+                <li><b>Synchronisation :</b> Mise à jour de la version du site et de l'API à v1.7.5.</li>
               </ul>
             </div>
             
+            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 30px; opacity: 0.8;">
+              <h3 style="margin: 0; color: var(--accent); font-size: 1.1rem;">v1.7.4 - Accès Extérieur & Cloud Ready</h3>
+              <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
+                <li>Support des accès via domaines externes et détection dynamique de l'URL de l'API.</li>
+              </ul>
+            </div>
+
+            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 30px; opacity: 0.7;">
+              <h3 style="margin: 0; color: var(--accent); font-size: 1.1rem;">v1.7.3 - Orthophoniste & Import Fix</h3>
+              <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
+                <li>Finalisation de l'affichage dynamique des mots et du suivi orthophoniste.</li>
+                <li>Nouveau parser CSV ultra-robuste capable de détecter la date n'importe où dans la ligne.</li>
+                <li>Affichage complet des informations de compte incluant l'adresse e-mail.</li>
+              </ul>
+            </div>
+
             <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 30px;">
               <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.7.0 - Parser CSV Auto-adaptatif</h3>
               <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 3 Mai 2026</p>
@@ -579,7 +619,7 @@
       </div>
 
     <footer class="page-footer">
-      <p>© 2026 Christophe Lambert • Site v1.7.3 • API <span id="api-version">...</span></p>
+      <p>© 2026 Christophe Lambert • Site v1.7.7 • API <span id="api-version">...</span></p>
     </footer>
 
     <script>
@@ -645,10 +685,8 @@
       const themeToggle = document.getElementById('theme-toggle-container');
       const categoryNav = document.querySelector('.category-nav');
       
-      // Si on est sur le port 3000, on utilise des chemins relatifs.
-      // Sinon (Live Server, GitHub, etc.), on pointe vers l'IP Tailscale du Mac Mini.
-      const TAILSCALE_IP = '100.99.13.22';
-      const API_BASE = (window.location.port === '3000') ? '' : `http://${TAILSCALE_IP}:3000`;
+      // Détection automatique : si on est sur le même domaine, on utilise le chemin relatif
+      const API_BASE = (window.location.hostname === 'localhost' || window.location.port === '3000') ? '' : window.location.origin;
 
       const loadButtonLabels = async () => {
         try {
@@ -689,18 +727,35 @@
 
       const setCategory = (key) => {
         const category = categories[key];
-        document.getElementById('ortho-data-container').style.display = 'none';
-        document.getElementById('import-zone').style.display = (key === 'orthophoniste') ? 'block' : 'none';
+        const constructionMsg = document.getElementById('construction-message');
+        const orthoData = document.getElementById('ortho-data-container');
+        const importZone = document.getElementById('import-zone');
+        const orthoActions = document.getElementById('category-actions');
+        const motsTableContainer = document.getElementById('mots-table-container'); // New
+        const orthophonisteSectionContent = document.getElementById('orthophoniste-section-content'); // New
 
-        if (key !== 'orthophoniste') {
+        // Reset de la vue
+        accueilPanel.style.display = 'none';
+        contentPanel.style.display = 'none';
+        orthoData.style.display = 'none';
+
+        if (key === 'accueil') {
           accueilPanel.style.display = 'flex';
-          contentPanel.style.display = 'none';
         } else {
-          accueilPanel.style.display = 'none';
           contentPanel.style.display = 'block';
           titleElement.textContent = category.title;
-          descriptionElement.textContent = category.description;
-          actionsElement.style.display = category.actionsVisible ? 'flex' : 'none';
+
+          if (key === 'orthophoniste') {
+            descriptionElement.textContent = category.description;
+            orthoActions.style.display = 'flex';
+            importZone.style.display = 'block';
+            constructionMsg.style.display = 'none';
+          } else {
+            descriptionElement.textContent = "Section en cours de développement.";
+            orthoActions.style.display = 'none';
+            importZone.style.display = 'none';
+            constructionMsg.style.display = 'block';
+          }
         }
       };
 
@@ -746,7 +801,7 @@
         const modalTitle = document.querySelector('#admin-modal h2');
 
         let personalInfoHtml = `
-          <div style="padding: 10px 0;">
+          <div style="text-align: left; padding: 10px 0;">
             <p><strong>Utilisateur :</strong> ${username}</p>
             <p><strong>E-mail :</strong> ${email || 'Connectez-vous à nouveau pour voir l\'e-mail'}</p>
             <p><strong>Rôle :</strong> ${role || 'Utilisateur'}</p>
@@ -763,12 +818,12 @@
         } else {
           modalTitle.textContent = 'Mon Compte';
           usersListContainer.innerHTML = personalInfoHtml + `
-              <h3>Sécurité</h3>
-              <p style="color: var(--panel-text-color); margin-bottom: 15px;">Pour modifier votre mot de passe, demandez un lien de réinitialisation par e-mail :</p>
-              <div style="text-align: center; margin-top: 10px;">
-                <button class="btn-resend" onclick="resendReset('${username}', this)">M'envoyer un lien de réinitialisation</button>
-              </div>
+            <h3>Sécurité</h3>
+            <p style="color: var(--panel-text-color); margin-bottom: 15px;">Pour modifier votre mot de passe, demandez un lien de réinitialisation par e-mail :</p>
+            <div style="text-align: center; margin-top: 20px; margin-bottom: 10px;">
+              <button class="btn-resend" onclick="resendReset('${username}', this)">M'envoyer un lien de réinitialisation</button>
             </div>
+          </div>
           `;
         }
       };
@@ -1019,6 +1074,13 @@
         });
       });
 
+      // New elements for mots table
+      const btnListMots = document.getElementById('btn-list-mots');
+      const motsTableContainer = document.getElementById('mots-table-container');
+
+      // Gestion de la liste Orthophoniste
+      // ... (existing btn-list-j event listener)
+
       // Gestion de la liste Orthophoniste
       document.getElementById('btn-list-j').addEventListener('click', async () => {
         const container = document.getElementById('ortho-data-container');
@@ -1037,12 +1099,21 @@
 
           data.forEach(row => {
             const date = new Date(row.Date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            
+            let motDisplay;
+            if (row.Total === 0) {
+                motDisplay = '<em>Aucun</em>';
+            } else if (!row.Mot) {
+                motDisplay = '<em>Plusieurs</em>';
+            } else {
+                motDisplay = row.Mot;
+            }
             const statusClass = row.Complet ? 'status-complet' : 'status-incomplet';
             const statusText = row.Complet ? 'Complet' : 'Incomplet';
             html += `
               <tr>
                 <td style="font-size:0.85rem;">${date}</td>
-                <td style="color:var(--accent); font-weight:700;">${row.Mot || '<em>Plusieurs</em>'}</td>
+                <td style="color:var(--accent); font-weight:700;">${motDisplay}</td>
                 <td style="text-align:center; font-weight:700;">${row.Total || 0}</td>
                 <td style="text-align:center;"><span class="status-badge ${statusClass}">${statusText}</span></td>
               </tr>
@@ -1053,6 +1124,48 @@
         } catch (err) {
           container.innerHTML = '<p style="color:#ff4d4d; text-align:center;">Erreur lors du chargement.</p>';
         }
+      });
+
+      // Gestion de la liste de tous les mots
+      btnListMots.addEventListener('click', async () => {
+          motsTableContainer.style.display = 'block';
+          motsTableContainer.innerHTML = '<p style="text-align:center; margin-top:20px; color:var(--subtext-color);">Chargement des mots...</p>';
+
+          try {
+              const response = await fetch(`${API_BASE}/api/mots`);
+              const data = await response.json();
+
+              if (data.length === 0) {
+                  motsTableContainer.innerHTML = '<p style="text-align:center; margin-top:20px;">Aucun mot disponible.</p>';
+                  return;
+              }
+
+              let html = `
+                  <h3 style="margin-bottom: 15px; color: var(--accent);">Liste de tous les mots</h3>
+                  <table class="data-table">
+                      <thead>
+                          <tr>
+                              <th>ID</th>
+                              <th>Mot</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+              `;
+
+              data.forEach(row => {
+                  html += `
+                      <tr>
+                          <td>${row.Id}</td>
+                          <td>${row.Mot}</td>
+                      </tr>
+                  `;
+              });
+
+              html += '</tbody></table>';
+              motsTableContainer.innerHTML = html;
+          } catch (err) {
+              motsTableContainer.innerHTML = '<p style="color:#ff4d4d; text-align:center; margin-top:20px;">Erreur lors du chargement des mots.</p>';
+          }
       });
 
       // Gestion Import

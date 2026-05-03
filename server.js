@@ -6,8 +6,9 @@ const bcrypt = require('bcrypt');
 
 const app = express();
 const port = process.env.PORT || 3000;
-const host = '100.99.13.22';
-const apiVersion = '1.7.3'; 
+// Si tu utilises un domaine (ex: nathanael.cfarg.com), définis PUBLIC_URL
+const publicHost = process.env.PUBLIC_URL || `http://100.99.13.22:${port}`;
+const apiVersion = '1.7.7';
  
 const dbConfig = {
   user: process.env.DB_USER,
@@ -82,7 +83,7 @@ async function sendResetEmail(login, email, customSubject = null) {
       <h3>Bonjour ${login},</h3>
       <p>Une action est requise sur votre compte pour définir ou réinitialiser votre mot de passe.</p>
       <p>Veuillez cliquer sur le bouton ci-dessous pour accéder à la page sécurisée :</p>
-      <a href="http://${host}:${port}/reset-password.html?login=${encodeURIComponent(login)}" 
+      <a href="${publicHost}/reset-password.html?login=${encodeURIComponent(login)}" 
          style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
          Définir mon mot de passe
       </a>
@@ -265,7 +266,7 @@ app.post('/api/activate', async (req, res) => {
         <h3>Nouvelle demande d'activation</h3>
         <p>L'utilisateur <strong>${login}</strong> (${email}) souhaite activer son compte.</p>
         <p>Cliquez sur le bouton ci-dessous pour valider sa demande et lui envoyer le lien de création de mot de passe :</p>
-        <a href="http://${host}:${port}/api/confirm-activation?login=${encodeURIComponent(login)}&email=${encodeURIComponent(email)}" 
+        <a href="${publicHost}/api/confirm-activation?login=${encodeURIComponent(login)}&email=${encodeURIComponent(email)}" 
            style="background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
            Accepter l'activation
         </a>
@@ -559,6 +560,21 @@ app.get('/api/orthophoniste', async (req, res) => {
   }
 });
 
+app.get('/api/mots', async (req, res) => {
+  try {
+    await poolConnect;
+    const result = await pool.request().query(`
+      SELECT Id, Mot
+      FROM Mots
+      ORDER BY Mot ASC
+    `);
+    res.json(result.recordset);
+  } catch (error) {
+    console.error('API /api/mots error:', error);
+    res.status(500).json({ error: 'Erreur lors de la récupération des mots.' });
+  }
+});
+
 // Tâche de fond : Vérification toutes les 1 heure (3600000 ms)
 setInterval(async () => {
   console.log(`[${new Date().toISOString()}] Vérification des relances de mot de passe...`);
@@ -587,5 +603,5 @@ app.get('/', (req, res) => {
 });
 
 app.listen(port, '0.0.0.0', () => {
-  console.log(`Server v${apiVersion} running on http://${host}:${port}`);
+  console.log(`Server v${apiVersion} running on port ${port} (Public URL: ${publicHost})`);
 });
