@@ -2,14 +2,12 @@ const path = require('path');
 const express = require('express');
 const sql = require('mssql');
 const nodemailer = require('nodemailer');
-const { Readable } = require('stream');
-const csv = require('csv-parser');
 const bcrypt = require('bcrypt');
 
 const app = express();
 const port = process.env.PORT || 3000;
 const host = '100.99.13.22';
-const apiVersion = '1.6.7'; 
+const apiVersion = '1.7.3'; 
  
 const dbConfig = {
   user: process.env.DB_USER,
@@ -158,7 +156,7 @@ app.post('/api/login', async (req, res) => {
     await poolConnect;
     const result = await pool.request()
       .input('username', sql.NVarChar, username.trim())
-      .query('SELECT UserID, Username, Email, Role, MotDePasseIsActive, PasswordHash FROM Utilisateurs WHERE Username = @username');
+      .query('SELECT UserID, Username, Email, Role, MustResetPassword, MotDePasseIsActive, PasswordHash FROM Utilisateurs WHERE Username = @username');
 
     if (result.recordset.length > 0) {
       const user = result.recordset[0];
@@ -421,69 +419,144 @@ app.post('/api/import-csv', async (req, res) => {
   if (!csvString) {
     return res.status(400).json({ error: 'Contenu CSV manquant dans le corps de la requête.' });
   }
+  const lines = csvString.split('\n');
+  const processedRows = [];
 
-  const results = [];
-  const s = new Readable();
-  s._read = () => {}; // Implémentation minimale de _read requise
-  s.push(csvString);
-  s.push(null); // Termine le flux
+  const monthMap = {
+    "janvier": 0, "février": 1, "mars": 2, "avril": 3, "mai": 4, "juin": 5,
+    "juillet": 6, "août": 7, "septembre": 8, "octobre": 9, "novembre": 10, "décembre": 11
+  };
 
-  s.pipe(csv())
-    .on('data', (data) => results.push(data))
-    .on('end', async () => {
-      try {
-        await poolConnect;
-        const transaction = new sql.Transaction(pool);
-        await transaction.begin();
+  // Expression régulière pour détecter une date type "vendredi 1 mai 2026"
+  const dateRegex = /\d{1,2}\s+(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\s+\d{4}/i;
 
-        try {
-          for (const row of results) {
-            let motId = null;
-            const mot = row.Mot ? row.Mot.trim() : null;
-            const date = row.Date ? new Date(row.Date) : null;
-            const total = row.Total ? parseInt(row.Total, 10) : null;
+  for (const line of lines) {
+    const text = line.trim();
+    if (!text) continue;
 
-            if (mot) {
-              // Vérifier si le mot existe déjà
-              let motResult = await transaction.request()
-                .input('mot', sql.NVarChar, mot)
-                .query('SELECT Id FROM Mots WHERE Mot = @mot');
+    // On cherche la date dans la ligne entière
+    const dateMatch = text.match(dateRegex);
+    if (!dateMatch) continue;
 
-              if (motResult.recordset.length > 0) {
-                motId = motResult.recordset[0].Id;
-              } else {
-                // Insérer le nouveau mot
-                motResult = await transaction.request()
-                  .input('mot', sql.NVarChar, mot)
-                  .query('INSERT INTO Mots (Mot) VALUES (@mot); SELECT SCOPE_IDENTITY() AS Id;');
-                motId = motResult.recordset[0].Id;
-              }
-            }
+    const dateString = dateMatch[0];
+    const parts = text.split(dateString);
+    
+    // Les mots sont avant la date (on retire le jour de la semaine s'il reste)
+    const wordsString = parts[0].replace(/^(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)/i, '').trim();
+    
+    // Le total est le premier nombre trouvé après la date
+    const afterDate = parts[1] || "";
+    const totalMatch = afterDate.match(/\d+/);
+    const totalWordsRaw = totalMatch ? totalMatch[0] : "";
 
-            // Insérer dans Orthophoniste
-            await transaction.request()
-              .input('motId', sql.Int, motId)
-              .input('date', sql.DateTime2, date)
-              .input('total', sql.Int, total)
-              .query('INSERT INTO Orthophoniste (MotId, Date, Total) VALUES (@motId, @date, @total)');
-          }
-
-          await transaction.commit();
-          res.json({ message: `${results.length} enregistrements CSV importés avec succès.` });
-        } catch (err) {
-          await transaction.rollback();
-          console.error('Erreur lors de l\'importation CSV (transaction):', err);
-          res.status(500).json({ error: 'Erreur lors de l\'importation des données CSV.' });
-        }
-      } catch (error) {
-        console.error('Erreur lors de la connexion à la base de données pour l\'importation CSV:', error);
-        res.status(500).json({ error: 'Erreur de connexion à la base de données.' });
-      }
-    })
-    .on('error', (error) => {
-      console.error('Erreur de parsing CSV:', error);
-      res.status(400).json({ error: 'Erreur lors du parsing du fichier CSV.' });
+    processedRows.push({
+      wordsString,
+      dateString,
+      totalWordsRaw
     });
+  }
+
+  if (processedRows.length === 0) {
+    return res.status(400).json({ error: 'Aucune donnée valide trouvée dans le CSV.' });
+  }
+
+  try {
+    await poolConnect;
+    const transaction = new sql.Transaction(pool);
+    await transaction.begin();
+
+    const wordCache = new Map(); // To store { word: MotId }
+
+    try {
+      for (const row of processedRows) {
+        let motId = null;
+        const words = row.wordsString
+          .split(',')
+          .map(w => w.trim())
+          .filter(w => w.length > 0);
+
+        // Process words for the Mots table
+        // If there's exactly one word, link to it. Otherwise, MotId in Orthophoniste will be NULL.
+        // All words mentioned in the CSV should be added to the Mots table.
+        if (words.length > 0) {
+            for (const word of words) {
+                if (!wordCache.has(word)) {
+                    let motResult = await transaction.request()
+                        .input('mot', sql.NVarChar, word)
+                        .query('SELECT Id FROM Mots WHERE Mot = @mot');
+
+                    if (motResult.recordset.length > 0) {
+                        wordCache.set(word, motResult.recordset[0].Id);
+                    } else {
+                        motResult = await transaction.request()
+                            .input('mot', sql.NVarChar, word)
+                            .query('INSERT INTO Mots (Mot) VALUES (@mot); SELECT SCOPE_IDENTITY() AS Id;');
+                        wordCache.set(word, motResult.recordset[0].Id);
+                    }
+                }
+            }
+            // If there's exactly one word, use its ID for MotId in Orthophoniste
+            if (words.length === 1) {
+                motId = wordCache.get(words[0]);
+            } else {
+                motId = null; // Multiple words, so MotId for the session is NULL
+            }
+        }
+
+        // Parse date
+        const dateParts = row.dateString.trim().split(/\s+/); 
+        // Gestion si le jour de la semaine a été inclu ou non dans le match
+        const hasDayName = isNaN(parseInt(dateParts[0]));
+        const day = parseInt(hasDayName ? dateParts[1] : dateParts[0], 10);
+        const monthStr = hasDayName ? dateParts[2] : dateParts[1];
+        const year = parseInt(hasDayName ? dateParts[3] : dateParts[2], 10);
+        const month = monthMap[monthStr.toLowerCase()];
+        const date = new Date(year, month, day);
+
+        // Parse total words
+        const total = isNaN(parseInt(row.totalWordsRaw, 10)) ? null : parseInt(row.totalWordsRaw, 10);
+
+        // Insert into Orthophoniste
+        await transaction.request()
+          .input('motId', sql.Int, motId)
+          .input('date', sql.DateTime2, date)
+          .input('total', sql.Int, total)
+          .query('INSERT INTO Orthophoniste (MotId, Date, Total) VALUES (@motId, @date, @total)');
+      }
+
+      await transaction.commit();
+      res.json({ message: `${processedRows.length} enregistrements CSV importés avec succès.` });
+    } catch (err) {
+      await transaction.rollback();
+      console.error('Erreur lors de l\'importation CSV (transaction):', err);
+      res.status(500).json({ error: 'Erreur lors de l\'importation des données CSV.' });
+    }
+  } catch (error) {
+    console.error('Erreur lors de la connexion à la base de données pour l\'importation CSV:', error);
+    res.status(500).json({ error: 'Erreur de connexion à la base de données.' });
+  }
+});
+
+app.get('/api/orthophoniste', async (req, res) => {
+  try {
+    await poolConnect;
+    const result = await pool.request().query(`
+      SELECT 
+        O.Id, 
+        O.Date, 
+        O.Total, 
+        O.Complet, 
+        O.Incomplet, 
+        M.Mot
+      FROM Orthophoniste O
+      LEFT JOIN Mots M ON O.MotId = M.Id
+      ORDER BY O.Date DESC
+    `);
+    res.json(result.recordset);
+  } catch (error) {
+    console.error('API /api/orthophoniste error:', error);
+    res.status(500).json({ error: 'Erreur lors de la récupération des données.' });
+  }
 });
 
 // Tâche de fond : Vérification toutes les 1 heure (3600000 ms)

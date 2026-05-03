@@ -335,16 +335,51 @@
         background-color: var(--accent);
         color: var(--button-text);
         border: none;
-        padding: 8px 16px;
-        border-radius: 10px;
+        padding: 12px 24px;
+        border-radius: 12px;
         cursor: pointer;
-        font-weight: 700;
-        transition: opacity 0.2s;
+        font-weight: 800;
+        transition: all 0.2s ease;
         white-space: nowrap;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       }
 
-      .btn-resend:hover { opacity: 0.9; }
+      .btn-resend:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15); }
       .btn-resend:disabled { opacity: 0.5; cursor: not-allowed; }
+
+      .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background-color: var(--panel-bg);
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid var(--panel-border);
+      }
+      .data-table th, .data-table td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid var(--panel-border);
+      }
+      .data-table th {
+        background-color: rgba(255, 255, 255, 0.05);
+        color: var(--accent);
+        font-weight: 700;
+      }
+      .status-badge {
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: bold;
+        display: inline-block;
+      }
+      .status-complet { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+      .status-incomplet { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+      
+      #ortho-data-container {
+        margin-top: 25px;
+        animation: fadeIn 0.3s ease-out;
+      }
 
       @media (max-width: 730px) {
         .page-wrapper {
@@ -451,14 +486,39 @@
         <div id="accueil-panel" style="display: none; flex-direction: column;">
           <div style="text-align: left;">
             <h2 style="margin-bottom: 20px;">📢 Notes de version</h2>
-            
             <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 30px;">
-              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.6.7 - Profil & Information de Compte</h3>
+              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.7.3 - Orthophoniste & Import Fix</h3>
               <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 3 Mai 2026</p>
               <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
-                <li><b>Profil :</b> L'adresse e-mail est désormais affichée dans les informations du compte.</li>
-                <li><b>Admin :</b> L'interface d'administration affiche désormais les informations personnelles de l'admin en haut de la liste de gestion.</li>
-                <li><b>Fix :</b> Récupération automatique de l'e-mail lors de la connexion pour affichage immédiat.</li>
+                <li><b>UI :</b> Finalisation de l'affichage dynamique des mots et du suivi orthophoniste.</li>
+                <li><b>Import :</b> Nouveau parser CSV ultra-robuste capable de détecter la date n'importe où dans la ligne.</li>
+                <li><b>Admin :</b> Affichage complet des informations de compte incluant l'adresse e-mail.</li>
+              </ul>
+            </div>
+            
+            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 30px;">
+              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.7.0 - Parser CSV Auto-adaptatif</h3>
+              <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 3 Mai 2026</p>
+              <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
+                <li><b>Fix (Parser) :</b> Détection dynamique de la colonne date pour supporter les exports Numbers/Excel avec colonnes vides.</li>
+                <li><b>Synchronisation :</b> Harmonisation de la version v1.7.0 sur l'ensemble du projet (Site, API, Package).</li>
+                <li><b>Stabilité :</b> Amélioration du typage des données lors de l'insertion SQL (sécurité sur les valeurs NULL).</li>
+              </ul>
+            </div>
+
+            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 30px;">
+              <h3 style="margin: 0; color: var(--accent); font-size: 1.1rem;">v1.6.9 - Stabilité Import</h3>
+              <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
+                <li>Nettoyage des doublons de code dans le serveur API.</li>
+              </ul>
+            </div>
+
+            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 30px;">
+              <h3 style="margin: 0; color: var(--accent); font-size: 1.1rem;">v1.6.8 - Import CSV Orthophoniste</h3>
+              <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 3 Mai 2026</p>
+              <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
+                <li><b>Fonctionnalité :</b> Ajout d'un endpoint API pour l'importation de données CSV dans les tables Mots et Orthophoniste.</li>
+                <li><b>Parsing :</b> Support des mots uniques et des listes de mots pour le suivi.</li>
               </ul>
             </div>
 
@@ -494,12 +554,15 @@
           <p id="category-description">Choisissez une option pour l'orthophoniste. Ces actions restent disponibles sans changer de page.</p>
 
           <div id="category-actions" class="actions-row" style="display: none;">
-            <a href="https://acrobat.adobe.com/id/urn:aaid:sc:EU:3340a9d1-c9ca-4db3-84e0-0debdf3a5519" target="_blank" class="action-link action-list">
-              📖 Liste de mots
-            </a>
-            <a href="https://www.icloud.com/numbers/078XYEvcNr5E7BLiCEQUM1Vyw#Répéter_10_Mots_par_jours" target="_blank" class="action-link action-board">
-              📊 Voir le board (mise à jour en direct)
-            </a>
+            <button type="button" id="btn-list-j" class="category-button" style="width: auto; min-width: 280px;">Liste de mots en "J"</button>
+          </div>
+
+          <div id="ortho-data-container" style="display: none;"></div>
+
+          <div id="import-zone" style="margin-top: 40px; padding: 20px; border: 1px solid var(--panel-border); border-radius: 16px; background: rgba(0,0,0,0.1); display: none;">
+            <h3 style="margin-top: 0; color: var(--accent);">📥 Importer des données</h3>
+            <textarea id="csv-import-area" placeholder="Collez vos données Numbers/Excel ici..." style="width: 100%; height: 100px; padding: 10px; border-radius: 8px; background: var(--button-bg); color: var(--text-color); border: 1px solid var(--panel-border); margin-bottom: 10px; font-family: monospace; font-size: 0.8rem;"></textarea>
+            <button type="button" id="submit-import" class="btn-resend" style="width: 100%;">Lancer l'importation</button>
           </div>
         </div>
       </section>
@@ -516,7 +579,7 @@
       </div>
 
     <footer class="page-footer">
-      <p>© 2026 Christophe Lambert • Site v1.6.7 • API <span id="api-version">...</span></p>
+      <p>© 2026 Christophe Lambert • Site v1.7.3 • API <span id="api-version">...</span></p>
     </footer>
 
     <script>
@@ -626,6 +689,8 @@
 
       const setCategory = (key) => {
         const category = categories[key];
+        document.getElementById('ortho-data-container').style.display = 'none';
+        document.getElementById('import-zone').style.display = (key === 'orthophoniste') ? 'block' : 'none';
 
         if (key !== 'orthophoniste') {
           accueilPanel.style.display = 'flex';
@@ -700,7 +765,9 @@
           usersListContainer.innerHTML = personalInfoHtml + `
               <h3>Sécurité</h3>
               <p style="color: var(--panel-text-color); margin-bottom: 15px;">Pour modifier votre mot de passe, demandez un lien de réinitialisation par e-mail :</p>
-              <button class="btn-resend" onclick="resendReset('${username}', this)">M'envoyer un lien de réinitialisation</button>
+              <div style="text-align: center; margin-top: 10px;">
+                <button class="btn-resend" onclick="resendReset('${username}', this)">M'envoyer un lien de réinitialisation</button>
+              </div>
             </div>
           `;
         }
@@ -950,6 +1017,73 @@
           const key = button.dataset.category;
           setCategory(key);
         });
+      });
+
+      // Gestion de la liste Orthophoniste
+      document.getElementById('btn-list-j').addEventListener('click', async () => {
+        const container = document.getElementById('ortho-data-container');
+        container.style.display = 'block';
+        container.innerHTML = '<p style="text-align:center; margin-top:20px; color:var(--subtext-color);">Chargement...</p>';
+
+        try {
+          const response = await fetch(`${API_BASE}/api/orthophoniste`);
+          const data = await response.json();
+
+          let html = `
+            <table class="data-table">
+              <thead><tr><th>Date</th><th>Mot(s)</th><th style="text-align:center;">Total</th><th style="text-align:center;">Statut</th></tr></thead>
+              <tbody>
+          `;
+
+          data.forEach(row => {
+            const date = new Date(row.Date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            const statusClass = row.Complet ? 'status-complet' : 'status-incomplet';
+            const statusText = row.Complet ? 'Complet' : 'Incomplet';
+            html += `
+              <tr>
+                <td style="font-size:0.85rem;">${date}</td>
+                <td style="color:var(--accent); font-weight:700;">${row.Mot || '<em>Plusieurs</em>'}</td>
+                <td style="text-align:center; font-weight:700;">${row.Total || 0}</td>
+                <td style="text-align:center;"><span class="status-badge ${statusClass}">${statusText}</span></td>
+              </tr>
+            `;
+          });
+          html += '</tbody></table>';
+          container.innerHTML = html;
+        } catch (err) {
+          container.innerHTML = '<p style="color:#ff4d4d; text-align:center;">Erreur lors du chargement.</p>';
+        }
+      });
+
+      // Gestion Import
+      const submitImport = document.getElementById('submit-import');
+      const csvArea = document.getElementById('csv-import-area');
+      
+      submitImport.addEventListener('click', async () => {
+        const csvContent = csvArea.value.trim();
+        if (!csvContent) return;
+
+        submitImport.disabled = true;
+        submitImport.textContent = "Importation...";
+
+        try {
+          const response = await fetch(`${API_BASE}/api/import-csv`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ csv: csvContent })
+          });
+          const result = await response.json();
+          alert(result.message || result.error);
+          if (response.ok) {
+            csvArea.value = '';
+            document.getElementById('btn-list-j').click(); // Rafraîchir
+          }
+        } catch (err) {
+          alert("Erreur réseau lors de l'import.");
+        } finally {
+          submitImport.disabled = false;
+          submitImport.textContent = "Lancer l'importation";
+        }
       });
 
       themeButtons.forEach(button => {
