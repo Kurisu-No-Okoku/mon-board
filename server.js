@@ -2,11 +2,12 @@ const path = require('path');
 const express = require('express');
 const sql = require('mssql');
 const nodemailer = require('nodemailer');
+const bcrypt = require('bcrypt');
 
 const app = express();
 const port = process.env.PORT || 3000;
 const host = '100.99.13.22';
-const apiVersion = '1.6.1';
+const apiVersion = '1.6.3';
 
 const dbConfig = {
   user: process.env.DB_USER,
@@ -145,7 +146,7 @@ app.post('/api/buttons', async (req, res) => {
 });
 
 app.post('/api/login', async (req, res) => {
-  const { username } = req.body;
+  const { username, password } = req.body;
 
   if (!username) {
     return res.status(400).json({ error: 'Nom d\'utilisateur requis.' });
@@ -155,16 +156,29 @@ app.post('/api/login', async (req, res) => {
     await poolConnect;
     const result = await pool.request()
       .input('username', sql.NVarChar, username)
-      .query('SELECT UserID, Username, Role, MotDePasseIsActive FROM Utilisateurs WHERE Username = @username');
+      .query('SELECT UserID, Username, Role, MotDePasseIsActive, PasswordHash FROM Utilisateurs WHERE Username = @username');
 
     if (result.recordset.length > 0) {
       const user = result.recordset[0];
       
-      // Logique sans mot de passe
-      if (user.MotDePasseIsActive === true) {
-        return res.status(401).json({ error: 'Mot de passe requis (non implémenté).' });
+      if (user.MotDePasseIsActive) {
+        if (!password) {
+          return res.status(400).json({ error: 'Mot de passe requis.' });
+        }
+        
+        try {
+          // Sécurité : bcrypt.compare peut échouer si le hash en BDD n'est pas au bon format (ex: 'WAITING_FOR_HASH')
+          const match = await bcrypt.compare(password, user.PasswordHash);
+          if (!match) {
+            return res.status(401).json({ error: 'Identifiant ou mot de passe incorrect.' });
+          }
+        } catch (bcryptError) {
+          console.error('Erreur de comparaison Bcrypt (hash invalide ?):', bcryptError.message);
+          return res.status(401).json({ error: 'Identifiant ou mot de passe incorrect.' });
+        }
       }
       
+      // Si le mot de passe n'est pas encore actif ou s'il correspond, on connecte
       res.json(user);
     } else {
       res.status(401).json({ error: 'Utilisateur non reconnu' });
@@ -172,6 +186,34 @@ app.post('/api/login', async (req, res) => {
   } catch (error) {
     console.error('API /api/login error:', error);
     res.status(500).json({ error: 'Erreur lors de la vérification de l\'utilisateur.' });
+  }
+});
+
+app.post('/api/reset-password', async (req, res) => {
+  const { login, password } = req.body;
+
+  if (!login || !password) {
+    return res.status(400).json({ error: 'Login et mot de passe requis.' });
+  }
+
+  try {
+    await poolConnect;
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    await pool.request()
+      .input('login', sql.NVarChar, login)
+      .input('hash', sql.NVarChar, hashedPassword)
+      .query(`
+        UPDATE [dbo].[Utilisateurs] 
+        SET PasswordHash = @hash, MustResetPassword = 0, MotDePasseIsActive = 1
+        WHERE Username = @login
+      `);
+
+    res.json({ message: 'Mot de passe mis à jour avec succès.' });
+  } catch (error) {
+    console.error('API /api/reset-password error:', error);
+    res.status(500).json({ error: 'Erreur lors de la mise à jour du mot de passe.' });
   }
 });
 
@@ -201,7 +243,7 @@ app.post('/api/activate', async (req, res) => {
         INSERT INTO [dbo].[Utilisateurs] 
           (Username, Email, PasswordHash, Role, MustResetPassword, MotDePasseIsActive, UserCreatedBy, LastModificationUserBy)
         VALUES 
-          (@login, @email, 'WAITING_FOR_HASH', 'User', 1, 1, @login, @login)
+          (@login, @email, 'WAITING_FOR_HASH', 'User', 0, 1, @login, @login)
       `);
 
     console.log(`Utilisateur ${login} inséré en base (en attente).`);
@@ -263,7 +305,7 @@ app.get('/api/confirm-activation', async (req, res) => {
     // 1. Remise à 0 du flag MustResetPassword
     await pool.request()
       .input('login', sql.NVarChar, login)
-      .query('UPDATE [dbo].[Utilisateurs] SET MustResetPassword = 0 WHERE Username = @login');
+      .query('UPDATE [dbo].[Utilisateurs] SET MustResetPassword = 1 WHERE Username = @login');
 
     // Préparation de l'e-mail pour l'utilisateur (Lien vers la page de création de MDP)
     const userMailOptions = {

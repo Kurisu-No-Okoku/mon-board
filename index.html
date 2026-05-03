@@ -409,13 +409,29 @@
         <h2>Connexion</h2>
         <div id="login-controls" style="max-width: 320px; margin: 0 auto;">
           <input type="text" id="login-input" placeholder="Saisir votre login" style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--panel-border); background: var(--button-bg); color: var(--text-color); margin-bottom: 12px; font-size: 1rem; outline: none;">
+          <input type="password" id="password-input" placeholder="Mot de passe" style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--panel-border); background: var(--button-bg); color: var(--text-color); margin-bottom: 12px; font-size: 1rem; outline: none;">
+          <div style="display: flex; align-items: center; justify-content: start; gap: 8px; margin-bottom: 15px;">
+            <input type="checkbox" id="remember-me" style="width: 18px; height: 18px; cursor: pointer;">
+            <label for="remember-me" style="font-size: 0.9rem; color: var(--subtext-color); cursor: pointer;">Mémoriser mes identifiants</label>
+          </div>
           <button type="button" id="login-submit" class="category-button" style="width: 100%; margin: 0;">Se connecter</button>
-          <p id="login-error" style="color: #ff4d4d; margin-top: 15px; display: none; font-weight: bold;">L'utilisateur n'est pas reconnu</p>
-          <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--panel-border);">
-          <button type="button" id="toggle-activation" style="background: none; border: none; color: var(--accent); cursor: pointer; text-decoration: underline; font-size: 0.9rem;">Activer votre compte</button>
+          <p id="login-error" style="color: #ff4d4d; margin-top: 15px; display: none; font-weight: bold;">Identifiants incorrects</p>
+        </div>
+        <div id="activation-cta" style="margin-top: 30px; padding: 20px; border: 2px dashed var(--panel-border); border-radius: 16px; background-color: rgba(138, 165, 195, 0.05);">
+          <h3 style="margin-top: 0; font-size: 1.1rem; color: var(--accent);">Nouveau sur le Board ?</h3>
+          <p style="font-size: 0.9rem; color: var(--subtext-color); margin-bottom: 15px;">Si vous n'avez pas encore d'accès, demandez l'activation de votre compte ici.</p>
+          <button type="button" id="toggle-activation" class="category-button" style="width: 100%; max-width: 320px; background-color: var(--accent); color: var(--bg-color); border: none; font-weight: 800;">✨ Demander mon accès</button>
         </div>
 
         <div id="activation-controls" style="max-width: 320px; margin: 0 auto; display: none;">
+          <h2 style="margin-bottom: 15px;">Demande d'Activation</h2>
+          <div style="text-align: left; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; margin-bottom: 20px; border-left: 4px solid var(--accent);">
+            <p style="font-size: 0.9rem; color: var(--panel-text-color); margin: 0; line-height: 1.5;">
+              <strong>Étape 1 :</strong> Remplissez le formulaire ci-dessous.<br>
+              <strong>Étape 2 :</strong> L'admin valide votre identité.<br>
+              <strong>Étape 3 :</strong> Vous recevez un <b>e-mail</b> pour créer votre mot de passe.
+            </p>
+          </div>
           <input type="text" id="activate-login" placeholder="Choisissez un login" style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--panel-border); background: var(--button-bg); color: var(--text-color); margin-bottom: 12px; font-size: 1rem; outline: none;">
           <input type="email" id="activate-email" placeholder="Saisissez votre e-mail" style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid var(--panel-border); background: var(--button-bg); color: var(--text-color); margin-bottom: 12px; font-size: 1rem; outline: none;">
           <button type="button" id="activation-submit" class="category-button" style="width: 100%; margin: 0 0 12px 0; background-color: var(--header-start);">Soumettre la demande d'activation</button>
@@ -432,11 +448,28 @@
       </nav>
 
       <section class="category-panel" id="category-panel" style="display: none;">
-        <div id="accueil-panel" class="construction-panel" style="display: none;">
-          <div class="construction-content">
-            <div class="construction-emoji">🚧</div>
-            <h3>En construction</h3>
-            <p>Cette section est actuellement en cours de développement. Revenez bientôt!</p>
+        <div id="accueil-panel" style="display: none; flex-direction: column;">
+          <div style="text-align: left;">
+            <h2 style="margin-bottom: 20px;">📢 Notes de version</h2>
+            
+            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 30px;">
+              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.6.3 - Release Notes & Accueil</h3>
+              <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 3 Mai 2026</p>
+              <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
+                <li><b>Accueil :</b> Remplacement de la bannière de construction par un journal des modifications complet.</li>
+                <li><b>Navigation :</b> Redirection systématique vers l'accueil après chaque connexion ou rechargement.</li>
+                <li><b>UX :</b> Harmonisation visuelle des boutons d'activation et amélioration des libellés.</li>
+              </ul>
+            </div>
+
+            <div class="release-item" style="border-left: 4px solid var(--panel-border); padding-left: 20px; margin-bottom: 20px; opacity: 0.8;">
+              <h3 style="margin: 0; color: var(--panel-heading-color); font-size: 1.1rem;">v1.6.2 - Sécurisation & Login</h3>
+              <ul style="margin: 10px 0 0 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.5; font-size: 0.95rem;">
+                <li>Implémentation du hachage de mot de passe avec Bcrypt pour protéger vos accès.</li>
+                <li>Nouveau système de demande d'activation de compte par e-mail.</li>
+                <li>Ajout de l'option "Mémoriser mes identifiants" via le stockage local sécurisé.</li>
+              </ul>
+            </div>
           </div>
         </div>
 
@@ -467,7 +500,7 @@
       </div>
 
     <footer class="page-footer">
-      <p>© 2026 Christophe Lambert • Site v1.6.1 • API <span id="api-version">...</span></p>
+      <p>© 2026 Christophe Lambert • Site v1.6.3 • API <span id="api-version">...</span></p>
     </footer>
 
     <script>
@@ -494,7 +527,7 @@
         },
         accueil: {
           title: 'Accueil',
-          description: 'Accueil en construction.',
+          description: 'Journal des modifications et actualités du Board.',
           actionsVisible: false
         }
       };
@@ -513,9 +546,12 @@
       // Éléments Login
       const loginSection = document.getElementById('login-section');
       const loginInput = document.getElementById('login-input');
+      const passwordInput = document.getElementById('password-input');
+      const rememberMe = document.getElementById('remember-me');
       const loginSubmit = document.getElementById('login-submit');
       const loginError = document.getElementById('login-error');
       const loginControls = document.getElementById('login-controls');
+      const activationCta = document.getElementById('activation-cta');
       const welcomeMsg = document.getElementById('welcome-message');
       
       // Activation
@@ -725,6 +761,7 @@
       // Toggle Activation/Login
       toggleActivation.addEventListener('click', () => {
         loginControls.style.display = 'none';
+        activationCta.style.display = 'none';
         activationControls.style.display = 'block';
         const title = loginSection.querySelector('h2');
         if (title) title.textContent = 'Activation';
@@ -732,6 +769,7 @@
 
       backToLogin.addEventListener('click', () => {
         loginControls.style.display = 'block';
+        activationCta.style.display = 'block';
         activationControls.style.display = 'none';
         const title = loginSection.querySelector('h2');
         if (title) title.textContent = 'Connexion';
@@ -774,15 +812,30 @@
         }
       });
 
-      const loginUser = (userData) => {
+      const loginUser = (userData, isAutoLogin = false) => {
         let username;
         if (typeof userData === 'object' && userData !== null) {
           username = userData.Username;
-          localStorage.setItem('currentUser', username);
-          localStorage.setItem('currentRole', userData.Role || 'User');
+          
+          if (!isAutoLogin) {
+            localStorage.setItem('currentUser', username);
+            localStorage.setItem('currentRole', userData.Role || 'User');
+            if (rememberMe.checked) {
+              localStorage.setItem('rememberedUser', username);
+            } else {
+              localStorage.removeItem('rememberedUser');
+            }
+          }
         } else {
           username = userData;
         }
+
+        passwordInput.value = ''; // Sécurité : on vide le champ après connexion
+
+        // Force visuelle du bouton Accueil comme actif
+        buttons.forEach(btn => btn.classList.remove('active'));
+        const homeBtn = document.querySelector('.home-button');
+        if (homeBtn) homeBtn.classList.add('active');
 
         welcomeMsg.textContent = `Bienvenue ${username}`;
         welcomeMsg.style.display = 'block';
@@ -797,8 +850,9 @@
       // Logique de connexion
       loginSubmit.addEventListener('click', async () => {
         const username = loginInput.value.trim();
+        const password = passwordInput.value;
         console.log("Tentative de login pour :", username);
-        if (!username) return;
+        if (!username) return; // On ne bloque plus si le mot de passe est vide
 
         loginError.style.display = 'none';
 
@@ -806,18 +860,16 @@
           const response = await fetch(`${API_BASE}/api/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username })
+            body: JSON.stringify({ username, password })
           });
 
+          const result = await response.json();
+
           if (response.ok) {
-            const user = await response.json();
-            loginUser(user);
-          } else if (response.status === 401) {
-            loginError.textContent = "Identifiant inconnu.";
-            loginError.style.display = 'block';
+            loginUser(result);
           } else {
+            loginError.textContent = result.error || "Identifiant ou mot de passe incorrect.";
             loginError.style.display = 'block';
-            throw new Error("Erreur serveur");
           }
         } catch (err) {
           console.error('Erreur login:', err);
@@ -834,7 +886,11 @@
         categoryNav.style.display = 'none';
         document.getElementById('category-panel').style.display = 'none';
         welcomeMsg.style.display = 'none';
-        loginInput.value = '';
+        
+        passwordInput.value = '';
+        const remembered = localStorage.getItem('rememberedUser');
+        loginInput.value = remembered ? remembered : '';
+        
         localStorage.removeItem('currentUser');
         localStorage.removeItem('currentRole');
         loginError.style.display = 'none';
@@ -842,8 +898,15 @@
 
       // Vérification session au chargement
       const savedUser = localStorage.getItem('currentUser');
+      const rememberedUser = localStorage.getItem('rememberedUser');
+
+      if (rememberedUser) {
+        loginInput.value = rememberedUser;
+        rememberMe.checked = true;
+      }
+
       if (savedUser) {
-        loginUser(savedUser);
+        loginUser(savedUser, true);
       }
 
       setTheme('dark');
