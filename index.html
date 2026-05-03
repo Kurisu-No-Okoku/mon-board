@@ -174,8 +174,9 @@
         transition: all 180ms ease;
       }
 
+      /* FIX: était #334155 (hardcodé), ne respectait pas le thème clair */
       .home-button:hover {
-        background-color: #334155;
+        background-color: var(--btn-hover);
       }
 
       .category-button {
@@ -262,12 +263,15 @@
         cursor: default;
       }
 
+      /* FIX: fusion des deux définitions dupliquées de .construction-panel */
       .construction-panel {
         display: flex;
         align-items: center;
         justify-content: center;
         min-height: 300px;
         text-align: center;
+        background-color: var(--panel-bg);
+        border-radius: 20px;
       }
 
       .construction-content {
@@ -296,7 +300,6 @@
         margin-bottom: 20px;
       }
 
-      /* Styles pour la modale d'administration */
       .modal {
         display: none;
         position: fixed;
@@ -347,7 +350,6 @@
       .btn-resend:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15); }
       .btn-resend:disabled { opacity: 0.5; cursor: not-allowed; }
 
-      /* Styles spécifiques pour le tableau de données Orthophoniste */
       .data-table {
         width: 100%;
         border-collapse: collapse;
@@ -376,32 +378,15 @@
       }
       .status-complet { background: rgba(16, 185, 129, 0.2); color: #10b981; }
       .status-incomplet { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
-      
+
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(4px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
       #ortho-data-container {
         margin-top: 25px;
         animation: fadeIn 0.3s ease-out;
-      }
-
-      #mots-table-container {
-        margin-top: 25px;
-        animation: fadeIn 0.3s ease-out;
-        background-color: var(--panel-bg);
-        border: 1px solid var(--panel-border);
-        border-radius: 12px;
-        padding: 15px;
-        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
-      }
-
-
-      /* Styles pour le message "En construction" */
-      .construction-panel {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 300px;
-        text-align: center;
-        background-color: var(--panel-bg);
-        border-radius: 20px;
       }
 
       @media (max-width: 730px) {
@@ -519,7 +504,7 @@
                 <li><b>Synchronisation :</b> Mise à jour de la version du site et de l'API à v1.7.5.</li>
               </ul>
             </div>
-            
+
             <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 30px; opacity: 0.8;">
               <h3 style="margin: 0; color: var(--accent); font-size: 1.1rem;">v1.7.4 - Accès Extérieur & Cloud Ready</h3>
               <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
@@ -604,6 +589,15 @@
             <textarea id="csv-import-area" placeholder="Collez vos données Numbers/Excel ici..." style="width: 100%; height: 100px; padding: 10px; border-radius: 8px; background: var(--button-bg); color: var(--text-color); border: 1px solid var(--panel-border); margin-bottom: 10px; font-family: monospace; font-size: 0.8rem;"></textarea>
             <button type="button" id="submit-import" class="btn-resend" style="width: 100%;">Lancer l'importation</button>
           </div>
+
+          <!-- FIX: élément manquant, causait un TypeError dans setCategory() -->
+          <div id="construction-message" style="display: none;" class="construction-panel">
+            <div class="construction-content">
+              <div class="construction-emoji">🚧</div>
+              <h3>En construction</h3>
+              <p>Cette section est en cours de développement.</p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -636,7 +630,7 @@
         },
         'dispositif-ulis': {
           title: 'Dispositif ULIS',
-          description: 'Vous êtes dans Dispositif ULIS. Le titre principal reste en place pour donner l’impression d’une même page.',
+          description: "Vous êtes dans Dispositif ULIS. Le titre principal reste en place pour donner l'impression d'une même page.",
           actionsVisible: false
         },
         maison: {
@@ -651,6 +645,24 @@
         }
       };
 
+      // FIX: échappe les caractères HTML pour éviter les injections XSS
+      const escapeHtml = (str) => String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+
+      const API_BASE = (window.location.hostname === 'localhost' || window.location.port === '3000') ? '' : window.location.origin;
+
+      // Helper fetch qui ajoute automatiquement le token d'authentification
+      const apiFetch = (url, options = {}) => {
+        const token = localStorage.getItem('authToken');
+        const headers = { ...options.headers };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        return fetch(url, { ...options, headers });
+      };
+
       const titleElement = document.getElementById('category-title');
       const descriptionElement = document.getElementById('category-description');
       const actionsElement = document.getElementById('category-actions');
@@ -662,7 +674,6 @@
       const accueilPanel = document.getElementById('accueil-panel');
       const contentPanel = document.getElementById('content-panel');
 
-      // Éléments Login
       const loginSection = document.getElementById('login-section');
       const loginInput = document.getElementById('login-input');
       const passwordInput = document.getElementById('password-input');
@@ -672,8 +683,7 @@
       const loginControls = document.getElementById('login-controls');
       const activationCta = document.getElementById('activation-cta');
       const welcomeMsg = document.getElementById('welcome-message');
-      
-      // Activation
+
       const toggleActivation = document.getElementById('toggle-activation');
       const activationControls = document.getElementById('activation-controls');
       const backToLogin = document.getElementById('back-to-login');
@@ -684,25 +694,17 @@
       const userActions = document.getElementById('user-actions');
       const themeToggle = document.getElementById('theme-toggle-container');
       const categoryNav = document.querySelector('.category-nav');
-      
-      // Détection automatique : si on est sur le même domaine, on utilise le chemin relatif
-      const API_BASE = (window.location.hostname === 'localhost' || window.location.port === '3000') ? '' : window.location.origin;
 
       const loadButtonLabels = async () => {
         try {
-          console.log("Tentative de chargement des libellés...");
-          const response = await fetch(`${API_BASE}/api/buttons`);
-          if (!response.ok) {
-            throw new Error(`Erreur HTTP: ${response.status}`);
-          }
+          const response = await apiFetch(`${API_BASE}/api/buttons`);
+          if (!response.ok) throw new Error(`Erreur HTTP: ${response.status}`);
           const labels = await response.json();
 
           labels.forEach(item => {
             if (item.ButtonKey) {
               const button = document.querySelector(`[data-category="${CSS.escape(item.ButtonKey)}"]`);
-              if (button) {
-                button.textContent = item.ButtonText;
-              }
+              if (button) button.textContent = item.ButtonText;
             }
           });
         } catch (error) {
@@ -710,17 +712,13 @@
         }
       };
 
-      // Récupération de la version de l'API
       const fetchApiInfo = async () => {
         try {
-          console.log("Récupération des infos API...");
-          const response = await fetch(`${API_BASE}/api/info`);
+          const response = await apiFetch(`${API_BASE}/api/info`);
           if (!response.ok) throw new Error();
           const data = await response.json();
           document.getElementById('api-version').textContent = 'v' + data.version;
-          console.log("Version API chargée :", data.version);
         } catch (e) {
-          console.error("Erreur fetchApiInfo:", e);
           document.getElementById('api-version').textContent = 'indisponible';
         }
       };
@@ -731,10 +729,7 @@
         const orthoData = document.getElementById('ortho-data-container');
         const importZone = document.getElementById('import-zone');
         const orthoActions = document.getElementById('category-actions');
-        const motsTableContainer = document.getElementById('mots-table-container'); // New
-        const orthophonisteSectionContent = document.getElementById('orthophoniste-section-content'); // New
 
-        // Reset de la vue
         accueilPanel.style.display = 'none';
         contentPanel.style.display = 'none';
         orthoData.style.display = 'none';
@@ -751,7 +746,7 @@
             importZone.style.display = 'block';
             constructionMsg.style.display = 'none';
           } else {
-            descriptionElement.textContent = "Section en cours de développement.";
+            descriptionElement.textContent = 'Section en cours de développement.';
             orthoActions.style.display = 'none';
             importZone.style.display = 'none';
             constructionMsg.style.display = 'block';
@@ -773,14 +768,10 @@
         }
       };
 
-      // Validation du login avec la touche Entrée
-      loginInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          loginSubmit.click();
-        }
-      });
+      // Soumission par la touche Entrée dans les deux champs
+      loginInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') loginSubmit.click(); });
+      passwordInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') loginSubmit.click(); });
 
-      // Gestion bouton Compte
       const adminModal = document.getElementById('admin-modal');
       const closeModal = document.getElementById('close-modal');
       const usersListContainer = document.getElementById('users-list-container');
@@ -800,11 +791,12 @@
         const email = localStorage.getItem('currentEmail');
         const modalTitle = document.querySelector('#admin-modal h2');
 
+        // FIX: escapeHtml sur toutes les valeurs pour éviter le XSS via localStorage
         let personalInfoHtml = `
           <div style="text-align: left; padding: 10px 0;">
-            <p><strong>Utilisateur :</strong> ${username}</p>
-            <p><strong>E-mail :</strong> ${email || 'Connectez-vous à nouveau pour voir l\'e-mail'}</p>
-            <p><strong>Rôle :</strong> ${role || 'Utilisateur'}</p>
+            <p><strong>Utilisateur :</strong> ${escapeHtml(username)}</p>
+            <p><strong>E-mail :</strong> ${escapeHtml(email || "Connectez-vous à nouveau pour voir l'e-mail")}</p>
+            <p><strong>Rôle :</strong> ${escapeHtml(role || 'Utilisateur')}</p>
             <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--panel-border);">
         `;
 
@@ -817,11 +809,12 @@
           await loadUsers();
         } else {
           modalTitle.textContent = 'Mon Compte';
+          // FIX: data-login au lieu de l'injection directe dans onclick
           usersListContainer.innerHTML = personalInfoHtml + `
             <h3>Sécurité</h3>
             <p style="color: var(--panel-text-color); margin-bottom: 15px;">Pour modifier votre mot de passe, demandez un lien de réinitialisation par e-mail :</p>
             <div style="text-align: center; margin-top: 20px; margin-bottom: 10px;">
-              <button class="btn-resend" onclick="resendReset('${username}', this)">M'envoyer un lien de réinitialisation</button>
+              <button class="btn-resend" data-login="${escapeHtml(username)}" onclick="resendReset(this.dataset.login, this)">M'envoyer un lien de réinitialisation</button>
             </div>
           </div>
           `;
@@ -837,23 +830,28 @@
         if (!target) return;
         target.innerHTML = 'Chargement des utilisateurs...';
         try {
-          const response = await fetch(`${API_BASE}/api/users`);
+          const response = await apiFetch(`${API_BASE}/api/users`);
+          if (!response.ok) {
+            target.innerHTML = `<p style="color:#ff4d4d">Erreur (${response.status}) : accès non autorisé.</p>`;
+            return;
+          }
           const users = await response.json();
-          
+
+          // FIX: escapeHtml + data-attributes pour éviter le XSS stocké (injection via noms d'utilisateurs)
           target.innerHTML = users.map(user => `
             <div class="user-item">
               <div>
-                <strong style="color: ${user.MotDePasseIsActive ? 'inherit' : '#94a2b6'}">${user.Username}</strong><br>
+                <strong style="color: ${user.MotDePasseIsActive ? 'inherit' : '#94a2b6'}">${escapeHtml(user.Username)}</strong><br>
                 <small style="color: var(--subtext-color)">
-                  ${user.Email} • 
+                  ${escapeHtml(user.Email)} •
                   <span style="color: ${user.MustResetPassword ? '#fbbf24' : '#10b981'}">
                     ${user.MustResetPassword ? '⏳ Reset requis' : '✅ Prêt'}
                   </span>
                 </small>
               </div>
               <div style="display: flex; gap: 8px;">
-                <button class="btn-resend" onclick="resendReset('${user.Username}', this)" title="Renvoyer le mail de reset">Relancer</button>
-                <button class="btn-resend" style="background-color: ${user.MotDePasseIsActive ? '#dc2626' : '#16a34a'}" onclick="toggleUserActive('${user.Username}', ${!user.MotDePasseIsActive}, this)">
+                <button class="btn-resend" data-login="${escapeHtml(user.Username)}" onclick="resendReset(this.dataset.login, this)" title="Renvoyer le mail de reset">Relancer</button>
+                <button class="btn-resend" style="background-color: ${user.MotDePasseIsActive ? '#dc2626' : '#16a34a'}" data-login="${escapeHtml(user.Username)}" data-active="${!user.MotDePasseIsActive}" onclick="toggleUserActive(this.dataset.login, this.dataset.active === 'true', this)">
                   ${user.MotDePasseIsActive ? 'Désactiver' : 'Activer'}
                 </button>
               </div>
@@ -869,7 +867,7 @@
         try {
           btn.disabled = true;
           btn.textContent = '...';
-          const response = await fetch(`${API_BASE}/api/request-reset`, {
+          const response = await apiFetch(`${API_BASE}/api/request-reset`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ login })
@@ -878,7 +876,7 @@
           alert(result.message || result.error);
           await loadUsers();
         } catch (err) {
-          alert("Erreur réseau");
+          alert('Erreur réseau');
         } finally {
           btn.disabled = false;
           btn.textContent = originalText;
@@ -890,24 +888,23 @@
         try {
           btn.disabled = true;
           btn.textContent = '...';
-          const response = await fetch(`${API_BASE}/api/users/toggle-active`, {
+          const response = await apiFetch(`${API_BASE}/api/users/toggle-active`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ login, isActive: newState })
           });
-          
+
           const result = await response.json();
           if (!response.ok) throw new Error(result.error);
-          
+
           await loadUsers();
         } catch (err) {
-          alert("Erreur : " + err.message);
+          alert('Erreur : ' + err.message);
         } finally {
           btn.disabled = false;
         }
       };
 
-      // Toggle Activation/Login
       toggleActivation.addEventListener('click', () => {
         loginControls.style.display = 'none';
         activationCta.style.display = 'none';
@@ -924,7 +921,6 @@
         if (title) title.textContent = 'Connexion';
       });
 
-      // Soumission Activation
       activationSubmit.addEventListener('click', async (e) => {
         e.preventDefault();
         const loginVal = document.getElementById('activate-login').value.trim();
@@ -939,7 +935,7 @@
           activationSubmit.disabled = true;
           activationSubmit.textContent = 'Envoi en cours...';
 
-          const response = await fetch(`${API_BASE}/api/activate`, {
+          const response = await apiFetch(`${API_BASE}/api/activate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ login: loginVal, email: emailVal })
@@ -965,11 +961,12 @@
         let username;
         if (typeof userData === 'object' && userData !== null) {
           username = userData.Username;
-          
+
           if (!isAutoLogin) {
             localStorage.setItem('currentUser', username);
             localStorage.setItem('currentRole', userData.Role || 'User');
             localStorage.setItem('currentEmail', userData.Email || '');
+            localStorage.setItem('authToken', userData.token || '');
             if (rememberMe.checked) {
               localStorage.setItem('rememberedUser', username);
             } else {
@@ -980,9 +977,8 @@
           username = userData;
         }
 
-        passwordInput.value = ''; // Sécurité : on vide le champ après connexion
+        passwordInput.value = '';
 
-        // Force visuelle du bouton Accueil comme actif
         buttons.forEach(btn => btn.classList.remove('active'));
         const homeBtn = document.querySelector('.home-button');
         if (homeBtn) homeBtn.classList.add('active');
@@ -997,17 +993,22 @@
         setCategory(defaultCategory);
       };
 
-      // Logique de connexion
+      const clearSession = () => {
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('currentRole');
+        localStorage.removeItem('currentEmail');
+        localStorage.removeItem('authToken');
+      };
+
       loginSubmit.addEventListener('click', async () => {
         const username = loginInput.value.trim();
         const password = passwordInput.value;
-        console.log("Tentative de login pour :", username);
-        if (!username) return; // On ne bloque plus si le mot de passe est vide
+        if (!username) return;
 
         loginError.style.display = 'none';
 
         try {
-          const response = await fetch(`${API_BASE}/api/login`, {
+          const response = await apiFetch(`${API_BASE}/api/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password })
@@ -1018,37 +1019,40 @@
           if (response.ok) {
             loginUser(result);
           } else {
-            loginError.textContent = result.error || "Identifiant ou mot de passe incorrect.";
+            loginError.textContent = result.error || 'Identifiant ou mot de passe incorrect.';
             loginError.style.display = 'block';
           }
         } catch (err) {
           console.error('Erreur login:', err);
-          loginError.textContent = "Erreur de connexion au serveur.";
+          loginError.textContent = 'Erreur de connexion au serveur.';
           loginError.style.display = 'block';
         }
       });
 
-      // Logique de déconnexion
-      logoutButton.addEventListener('click', () => {
+      logoutButton.addEventListener('click', async () => {
+        // Invalider le token côté serveur
+        try {
+          await apiFetch(`${API_BASE}/api/logout`, { method: 'POST' });
+        } catch (e) { /* silence — on déconnecte quand même */ }
+
+        clearSession();
+
         loginSection.style.display = 'block';
         themeToggle.style.display = 'none';
         userActions.style.display = 'none';
         categoryNav.style.display = 'none';
         document.getElementById('category-panel').style.display = 'none';
         welcomeMsg.style.display = 'none';
-        
-        passwordInput.value = '';
+
         const remembered = localStorage.getItem('rememberedUser');
-        loginInput.value = remembered ? remembered : '';
-        
-        localStorage.removeItem('currentUser');
-        localStorage.removeItem('currentRole');
-        localStorage.removeItem('currentEmail');
+        loginInput.value = remembered || '';
+        passwordInput.value = '';
         loginError.style.display = 'none';
       });
 
-      // Vérification session au chargement
+      // Vérification de session au chargement : on valide le token auprès du serveur
       const savedUser = localStorage.getItem('currentUser');
+      const savedToken = localStorage.getItem('authToken');
       const rememberedUser = localStorage.getItem('rememberedUser');
 
       if (rememberedUser) {
@@ -1056,8 +1060,24 @@
         rememberMe.checked = true;
       }
 
-      if (savedUser) {
-        loginUser(savedUser, true);
+      if (savedUser && savedToken) {
+        fetch(`${API_BASE}/api/verify-session`, {
+          headers: { 'Authorization': `Bearer ${savedToken}` }
+        })
+        .then(r => {
+          if (r.ok) {
+            loginUser(savedUser, true);
+          } else {
+            clearSession();
+          }
+        })
+        .catch(() => {
+          // Erreur réseau : on tente quand même de reconnecter (mode offline)
+          loginUser(savedUser, true);
+        });
+      } else if (savedUser) {
+        // Session pré-token (migration) : on force la reconnexion
+        clearSession();
       }
 
       setTheme('dark');
@@ -1068,27 +1088,18 @@
         button.addEventListener('click', () => {
           buttons.forEach(btn => btn.classList.remove('active'));
           button.classList.add('active');
-
-          const key = button.dataset.category;
-          setCategory(key);
+          setCategory(button.dataset.category);
         });
       });
 
-      // New elements for mots table
-      const btnListMots = document.getElementById('btn-list-mots');
-      const motsTableContainer = document.getElementById('mots-table-container');
-
-      // Gestion de la liste Orthophoniste
-      // ... (existing btn-list-j event listener)
-
-      // Gestion de la liste Orthophoniste
       document.getElementById('btn-list-j').addEventListener('click', async () => {
         const container = document.getElementById('ortho-data-container');
         container.style.display = 'block';
         container.innerHTML = '<p style="text-align:center; margin-top:20px; color:var(--subtext-color);">Chargement...</p>';
 
         try {
-          const response = await fetch(`${API_BASE}/api/orthophoniste`);
+          const response = await apiFetch(`${API_BASE}/api/orthophoniste`);
+          if (!response.ok) throw new Error(`Erreur ${response.status}`);
           const data = await response.json();
 
           let html = `
@@ -1099,14 +1110,14 @@
 
           data.forEach(row => {
             const date = new Date(row.Date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-            
+
             let motDisplay;
             if (row.Total === 0) {
-                motDisplay = '<em>Aucun</em>';
+              motDisplay = '<em>Aucun</em>';
             } else if (!row.Mot) {
-                motDisplay = '<em>Plusieurs</em>';
+              motDisplay = '<em>Plusieurs</em>';
             } else {
-                motDisplay = row.Mot;
+              motDisplay = escapeHtml(row.Mot);
             }
             const statusClass = row.Complet ? 'status-complet' : 'status-incomplet';
             const statusText = row.Complet ? 'Complet' : 'Incomplet';
@@ -1126,61 +1137,18 @@
         }
       });
 
-      // Gestion de la liste de tous les mots
-      btnListMots.addEventListener('click', async () => {
-          motsTableContainer.style.display = 'block';
-          motsTableContainer.innerHTML = '<p style="text-align:center; margin-top:20px; color:var(--subtext-color);">Chargement des mots...</p>';
-
-          try {
-              const response = await fetch(`${API_BASE}/api/mots`);
-              const data = await response.json();
-
-              if (data.length === 0) {
-                  motsTableContainer.innerHTML = '<p style="text-align:center; margin-top:20px;">Aucun mot disponible.</p>';
-                  return;
-              }
-
-              let html = `
-                  <h3 style="margin-bottom: 15px; color: var(--accent);">Liste de tous les mots</h3>
-                  <table class="data-table">
-                      <thead>
-                          <tr>
-                              <th>ID</th>
-                              <th>Mot</th>
-                          </tr>
-                      </thead>
-                      <tbody>
-              `;
-
-              data.forEach(row => {
-                  html += `
-                      <tr>
-                          <td>${row.Id}</td>
-                          <td>${row.Mot}</td>
-                      </tr>
-                  `;
-              });
-
-              html += '</tbody></table>';
-              motsTableContainer.innerHTML = html;
-          } catch (err) {
-              motsTableContainer.innerHTML = '<p style="color:#ff4d4d; text-align:center; margin-top:20px;">Erreur lors du chargement des mots.</p>';
-          }
-      });
-
-      // Gestion Import
       const submitImport = document.getElementById('submit-import');
       const csvArea = document.getElementById('csv-import-area');
-      
+
       submitImport.addEventListener('click', async () => {
         const csvContent = csvArea.value.trim();
         if (!csvContent) return;
 
         submitImport.disabled = true;
-        submitImport.textContent = "Importation...";
+        submitImport.textContent = 'Importation...';
 
         try {
-          const response = await fetch(`${API_BASE}/api/import-csv`, {
+          const response = await apiFetch(`${API_BASE}/api/import-csv`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ csv: csvContent })
@@ -1189,7 +1157,7 @@
           alert(result.message || result.error);
           if (response.ok) {
             csvArea.value = '';
-            document.getElementById('btn-list-j').click(); // Rafraîchir
+            document.getElementById('btn-list-j').click();
           }
         } catch (err) {
           alert("Erreur réseau lors de l'import.");
