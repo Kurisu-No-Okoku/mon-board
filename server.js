@@ -6,7 +6,7 @@ const nodemailer = require('nodemailer');
 const app = express();
 const port = process.env.PORT || 3000;
 const host = '100.99.13.22';
-const apiVersion = '1.2.0';
+const apiVersion = '1.3.0';
 
 const dbConfig = {
   user: process.env.DB_USER,
@@ -59,6 +59,15 @@ const transporter = nodemailer.createTransport({
   auth: {
     user: 'oldvivaldi@gmail.com',
     pass: process.env.EMAIL_PASSWORD
+  }
+});
+
+// Vérification de la configuration au démarrage
+transporter.verify((error, success) => {
+  if (error) {
+    console.error('❌ Erreur configuration SMTP (Gmail) :', error.message);
+  } else {
+    console.log('✅ Serveur de mail prêt à envoyer des messages');
   }
 });
 
@@ -171,34 +180,42 @@ app.post('/api/activate', async (req, res) => {
         INSERT INTO [dbo].[Utilisateurs] 
           (Username, Email, PasswordHash, Role, MustResetPassword, MotDePasseIsActive, UserCreatedBy, LastModificationUserBy)
         VALUES 
-          (@login, @email, 'WAITING_FOR_HASH', 'User', 1, 0, @login, @login)
+          (@login, @email, 'WAITING_FOR_HASH', 'User', 1, 1, @login, @login)
       `);
 
     console.log(`Utilisateur ${login} inséré en base (en attente).`);
 
-    // 3. Préparation des e-mails
+    // 3. Préparation de l'e-mail pour l'administrateur avec bouton d'acceptation
     const adminMailOptions = {
       from: 'oldvivaldi@gmail.com',
       to: 'oldvivaldi@gmail.com',
       subject: `Demande d'activation de compte : ${login}`,
-      text: `Bonjour,\n\nL'utilisateur "${login}" souhaite activer son compte.\nEmail de contact : ${email}\n\nCordialement.`
+      html: `
+        <h3>Nouvelle demande d'activation</h3>
+        <p>L'utilisateur <strong>${login}</strong> (${email}) souhaite activer son compte.</p>
+        <p>Cliquez sur le bouton ci-dessous pour valider sa demande et lui envoyer le lien de création de mot de passe :</p>
+        <a href="http://${host}:${port}/api/confirm-activation?login=${encodeURIComponent(login)}&email=${encodeURIComponent(email)}" 
+           style="background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
+           Accepter l'activation
+        </a>
+      `
     };
 
     // 4. Mail de confirmation pour l'utilisateur
     const userMailOptions = {
-      from: 'oldvivaldi@gmail.com',
+      from: '"administrateur" <oldvivaldi@gmail.com>',
       to: email,
       subject: 'Confirmation de votre demande d\'activation',
       text: `Bonjour ${login},\n\nVotre demande d'activation a bien été transmise à l'administrateur.\nVous recevrez un e-mail dès que votre compte sera prêt.\n\nCordialement,\nL'équipe de Nathanaël.`
     };
 
-    // 5. Envoi des e-mails avec gestion d'erreur spécifique
+    // 5. Envoi des e-mails (Admin + Utilisateur)
     try {
-      await transporter.sendMail(adminMailOptions);
-      await transporter.sendMail(userMailOptions);
+      await Promise.all([
+        transporter.sendMail(adminMailOptions),
+        transporter.sendMail(userMailOptions)
+      ]);
     } catch (mailError) {
-      console.error('Détails de l\'erreur Nodemailer :', mailError);
-      // Le compte est créé en base, on informe juste que le mail a échoué
       return res.status(201).json({ 
         message: 'Compte créé en attente, mais l\'envoi des e-mails de notification a échoué.',
         warning: 'Vérifiez la configuration SMTP (Mot de passe d\'application Gmail).' 
@@ -209,6 +226,53 @@ app.post('/api/activate', async (req, res) => {
   } catch (error) {
     console.error('Erreur API /api/activate:', error);
     res.status(500).json({ error: error.message || 'Erreur lors de l\'activation du compte.' });
+  }
+});
+
+// Nouvel endpoint pour la validation par l'administrateur
+app.get('/api/confirm-activation', async (req, res) => {
+  const { login, email } = req.query;
+
+  if (!login || !email) {
+    return res.status(400).send('Paramètres de validation manquants.');
+  }
+
+  try {
+    await poolConnect;
+    // 1. Remise à 0 du flag MustResetPassword
+    await pool.request()
+      .input('login', sql.NVarChar, login)
+      .query('UPDATE [dbo].[Utilisateurs] SET MustResetPassword = 0 WHERE Username = @login');
+
+    // Préparation de l'e-mail pour l'utilisateur (Lien vers la page de création de MDP)
+    const userMailOptions = {
+      from: '"administrateur" <oldvivaldi@gmail.com>',
+      to: email,
+      subject: 'Activation de votre compte Nathanaël - Création de mot de passe',
+      html: `
+        <h3>Bienvenue ${login} !</h3>
+        <p>Votre demande d'activation a été acceptée par l'administrateur.</p>
+        <p>Veuillez cliquer sur le bouton ci-dessous pour définir votre mot de passe et finaliser votre inscription :</p>
+        <a href="http://${host}:5500/reset-password.html?login=${encodeURIComponent(login)}" 
+           style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
+           Créer mon mot de passe
+        </a>
+        <p>Cordialement,<br>L'équipe de Nathanaël.</p>
+      `
+    };
+
+    await transporter.sendMail(userMailOptions);
+
+    // Réponse affichée dans le navigateur de l'admin
+    res.send(`
+      <div style="font-family: sans-serif; text-align: center; margin-top: 50px;">
+        <h2 style="color: #28a745;">Activation validée !</h2>
+        <p>L'e-mail de création de mot de passe a été envoyé à l'utilisateur (<strong>${email}</strong>).</p>
+      </div>
+    `);
+  } catch (error) {
+    console.error('Erreur confirm-activation:', error);
+    res.status(500).send('Erreur lors de l\'envoi de l\'e-mail de confirmation à l\'utilisateur.');
   }
 });
 

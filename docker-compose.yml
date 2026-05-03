@@ -12,7 +12,7 @@ services:
       DB_PASSWORD: "@1887Snoopy!"
       DB_DATABASE: "WEB_NATHANAEL"
       DB_PORT: "1433"
-      EMAIL_PASSWORD: "@1887Snoopy!"
+      EMAIL_PASSWORD: "hqiqxpoejnjkqunz"
     restart: unless-stopped
     networks:
       - web-nathanael-network
