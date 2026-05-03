@@ -405,8 +405,19 @@
         </div>
       </section>
 
+      <!-- Modal d'administration -->
+      <div id="admin-modal" class="modal">
+        <div class="modal-content">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="margin: 0;">Gestion des Utilisateurs</h2>
+            <button type="button" id="close-modal" style="background:none; border:none; color:var(--text-color); font-size: 1.5rem; cursor:pointer;">&times;</button>
+          </div>
+          <div id="users-list-container">Chargement...</div>
+        </div>
+      </div>
+
     <footer class="page-footer">
-      <p>© 2026 Christophe Lambert • Site v1.4.5 • API <span id="api-version">...</span></p>
+      <p>© 2026 Christophe Lambert • Site v1.5.0 • API <span id="api-version">...</span></p>
     </footer>
 
     <script>
@@ -548,9 +559,63 @@
       });
 
       // Gestion bouton Compte
-      accountButton.addEventListener('click', () => {
-        alert(`Utilisateur connecté : ${loginInput.value}`);
+      const adminModal = document.getElementById('admin-modal');
+      const closeModal = document.getElementById('close-modal');
+      const usersListContainer = document.getElementById('users-list-container');
+
+      accountButton.addEventListener('click', async () => {
+        adminModal.style.display = 'block';
+        await loadUsers();
       });
+
+      closeModal.addEventListener('click', () => {
+        adminModal.style.display = 'none';
+      });
+
+      window.onclick = (event) => {
+        if (event.target == adminModal) adminModal.style.display = 'none';
+      };
+
+      const loadUsers = async () => {
+        usersListContainer.innerHTML = 'Chargement des utilisateurs...';
+        try {
+          const response = await fetch(`${API_BASE}/api/users`);
+          const users = await response.json();
+          
+          usersListContainer.innerHTML = users.map(user => `
+            <div class="user-item">
+              <div>
+                <strong>${user.Username}</strong><br>
+                <small style="color: var(--subtext-color)">${user.Email} • ${user.MustResetPassword ? '⏳ En attente reset' : '✅ Actif'}</small>
+              </div>
+              <button class="btn-resend" onclick="resendReset('${user.Username}', this)">Relancer</button>
+            </div>
+          `).join('');
+        } catch (err) {
+          usersListContainer.innerHTML = '<p style="color:#ff4d4d">Erreur lors du chargement.</p>';
+        }
+      };
+
+      window.resendReset = async (login, btn) => {
+        const originalText = btn.textContent;
+        try {
+          btn.disabled = true;
+          btn.textContent = '...';
+          const response = await fetch(`${API_BASE}/api/request-reset`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ login })
+          });
+          const result = await response.json();
+          alert(result.message || result.error);
+          await loadUsers();
+        } catch (err) {
+          alert("Erreur réseau");
+        } finally {
+          btn.disabled = false;
+          btn.textContent = originalText;
+        }
+      };
 
       // Toggle Activation/Login
       toggleActivation.addEventListener('click', () => {

@@ -6,7 +6,7 @@ const nodemailer = require('nodemailer');
 const app = express();
 const port = process.env.PORT || 3000;
 const host = '100.99.13.22';
-const apiVersion = '1.4.0';
+const apiVersion = '1.5.0';
 
 const dbConfig = {
   user: process.env.DB_USER,
@@ -294,6 +294,24 @@ app.get('/api/confirm-activation', async (req, res) => {
   } catch (error) {
     console.error('Erreur confirm-activation:', error);
     res.status(500).send('Erreur lors de l\'envoi de l\'e-mail de confirmation à l\'utilisateur.');
+  }
+});
+
+// Endpoint pour lister tous les utilisateurs (Admin)
+app.get('/api/users', async (req, res) => {
+  try {
+    await poolConnect;
+    const result = await pool.request()
+      .query(`
+        SELECT UserID, Username, Email, Role, MustResetPassword, MotDePasseIsActive 
+        FROM Utilisateurs 
+        ORDER BY Username ASC
+      `);
+
+    res.json(result.recordset);
+  } catch (error) {
+    console.error('API /api/users error:', error);
+    res.status(500).json({ error: 'Impossible de récupérer la liste des utilisateurs.' });
   }
 });
 
