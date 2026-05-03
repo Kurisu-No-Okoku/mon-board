@@ -6,7 +6,8 @@ COPY package*.json ./
 
 RUN npm install
 
-COPY server.js .
+# Copie tout le contenu du dossier (y compris index.html) dans le container
+COPY . .
 
 EXPOSE 3000
 
