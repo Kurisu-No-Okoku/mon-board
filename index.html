@@ -389,6 +389,72 @@
         animation: fadeIn 0.3s ease-out;
       }
 
+      #ortho-tables-row {
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+      }
+
+      #mots-col {
+        flex: 0 0 190px;
+        min-width: 0;
+      }
+
+      #ortho-col {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .word-list {
+        background-color: var(--panel-bg);
+        border: 1px solid var(--panel-border);
+        border-radius: 12px;
+        overflow: hidden;
+        max-height: 540px;
+        overflow-y: auto;
+      }
+
+      .word-list-header {
+        padding: 10px 14px;
+        background-color: rgba(255, 255, 255, 0.05);
+        color: var(--accent);
+        font-weight: 700;
+        font-size: 0.85rem;
+        border-bottom: 1px solid var(--panel-border);
+        position: sticky;
+        top: 0;
+      }
+
+      .word-item {
+        padding: 9px 14px;
+        border-bottom: 1px solid var(--panel-border);
+        cursor: pointer;
+        transition: background-color 0.12s ease, opacity 0.12s ease;
+        font-size: 0.9rem;
+        user-select: none;
+      }
+
+      .word-item:last-child { border-bottom: none; }
+
+      .word-item:hover { background-color: rgba(138, 165, 195, 0.1); }
+
+      .word-item.active {
+        background-color: rgba(138, 165, 195, 0.22);
+        color: var(--accent);
+        font-weight: 700;
+      }
+
+      .word-item.dimmed { opacity: 0.25; }
+
+      .ortho-row { transition: opacity 0.12s ease, background-color 0.12s ease; }
+
+      .ortho-row.clickable { cursor: pointer; }
+
+      .ortho-row.highlighted { background-color: rgba(138, 165, 195, 0.12); }
+      .ortho-row.highlighted > td:first-child { border-left: 3px solid var(--accent); }
+
+      .ortho-row.dimmed { opacity: 0.25; }
+
       @media (max-width: 730px) {
         .page-wrapper {
           gap: 0;
@@ -424,6 +490,15 @@
 
         .construction-emoji {
           font-size: 2rem;
+        }
+
+        #ortho-tables-row {
+          flex-direction: column;
+        }
+
+        #mots-col {
+          flex: none;
+          width: 100%;
         }
       }
     </style>
@@ -496,6 +571,48 @@
             <h2 style="margin-bottom: 20px;">📢 Notes de version</h2>
 
             <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 30px;">
+              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.9.2 - Hotfix navigation bouton "Liste de mots"</h3>
+              <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 3 Mai 2026</p>
+              <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
+                <li><b>Fix (critique) :</b> Le bouton "Liste de mots" partage la classe <code>category-button</code>, ce qui le faisait capturer par le listener de navigation et appelait <code>setCategory(undefined)</code> — fermant le tableau et bloquant le chargement. Ajout d'un guard <code>if (!data-category) return</code>.</li>
+              </ul>
+            </div>
+
+            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 30px; opacity: 0.8;">
+              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.9.1 - Hotfix double tableau</h3>
+              <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 3 Mai 2026</p>
+              <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
+                <li><b>Fix :</b> Colonne "Mot(s)" affichait "Plusieurs" quand Total vaut NULL en base — désormais correctement affiché comme "Aucun".</li>
+                <li><b>Fix :</b> Bouton "Liste de mots" ne déclenchait pas le chargement — comparaison d'état du display corrigée (<code>!== 'none'</code> → <code>=== 'block'</code>) et valeur d'affichage explicite.</li>
+              </ul>
+            </div>
+
+            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 30px; opacity: 0.8;">
+              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.9.0 - Vue double tableau Orthophoniste</h3>
+              <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 3 Mai 2026</p>
+              <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
+                <li><b>Fonctionnalité :</b> Nouveau bouton "Liste de mots" qui apparaît après le chargement du tableau orthophoniste.</li>
+                <li><b>UI :</b> Affichage en deux colonnes — liste de mots à gauche, tableau de suivi à droite (empilement vertical sur mobile).</li>
+                <li><b>Navigation :</b> Clic sur un mot filtre et surligne les lignes correspondantes dans le tableau ; clic sur une ligne surligne le mot dans la liste.</li>
+                <li><b>Fix :</b> La colonne "Mot(s)" affiche désormais "Aucun" (sans italique) quand le total est à 0.</li>
+              </ul>
+            </div>
+
+            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 30px; opacity: 0.8;">
+              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.8.0 - Sécurité & Authentification</h3>
+              <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 3 Mai 2026</p>
+              <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
+                <li><b>Sécurité (Auth) :</b> Mise en place d'un système de tokens de session côté serveur — chaque connexion génère un token unique invalidé à la déconnexion.</li>
+                <li><b>Sécurité (Endpoints) :</b> Protection des routes API par rôle : les endpoints admin exigent désormais un rôle Admin, les autres un utilisateur connecté.</li>
+                <li><b>Sécurité (XSS) :</b> Échappement HTML systématique dans la modale de gestion des utilisateurs et dans les réponses serveur.</li>
+                <li><b>Login :</b> Seul le compte Admin peut se connecter sans mot de passe — les autres comptes en attente reçoivent un message d'erreur explicite.</li>
+                <li><b>Fix (Runtime) :</b> Correction de la variable <code>host</code> non définie dans la config SQL Server (ReferenceError au démarrage).</li>
+                <li><b>Fix (UI) :</b> Correction des éléments manquants dans le DOM (<code>construction-message</code>).</li>
+                <li><b>UI :</b> Correction du hover du bouton Accueil en thème clair, fusion du CSS dupliqué, ajout de l'animation fadeIn.</li>
+              </ul>
+            </div>
+
+            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 30px; opacity: 0.8;">
               <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.7.5 - Navigation & UI Fixes</h3>
               <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 3 Mai 2026</p>
               <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
@@ -580,9 +697,19 @@
 
           <div id="category-actions" class="actions-row" style="display: none;">
             <button type="button" id="btn-list-j" class="category-button" style="width: auto; min-width: 280px;">Liste de mots en "J"</button>
+            <button type="button" id="btn-list-mots" class="category-button" style="width: auto; min-width: 180px; display: none;">📋 Liste de mots</button>
           </div>
 
-          <div id="ortho-data-container" style="display: none;"></div>
+          <div id="ortho-data-container" style="display: none;">
+            <div id="ortho-tables-row">
+              <div id="mots-col" style="display: none;">
+                <div id="mots-table-content"></div>
+              </div>
+              <div id="ortho-col">
+                <div id="ortho-table-content"></div>
+              </div>
+            </div>
+          </div>
 
           <div id="import-zone" style="margin-top: 40px; padding: 20px; border: 1px solid var(--panel-border); border-radius: 16px; background: rgba(0,0,0,0.1); display: none;">
             <h3 style="margin-top: 0; color: var(--accent);">📥 Importer des données</h3>
@@ -613,7 +740,7 @@
       </div>
 
     <footer class="page-footer">
-      <p>© 2026 Christophe Lambert • Site v1.7.7 • API <span id="api-version">...</span></p>
+      <p>© 2026 Christophe Lambert • Site v1.9.2 • API <span id="api-version">...</span></p>
     </footer>
 
     <script>
@@ -1086,55 +1213,165 @@
 
       buttons.forEach(button => {
         button.addEventListener('click', () => {
+          if (!button.dataset.category) return;
           buttons.forEach(btn => btn.classList.remove('active'));
           button.classList.add('active');
           setCategory(button.dataset.category);
         });
       });
 
+      // ── État de la vue orthophoniste ────────────────────────────────────────
+      let orthoData = [];
+      let motsData  = [];
+      let selectedMot = null;
+
+      const orthoContainer   = document.getElementById('ortho-data-container');
+      const orthoTableContent = document.getElementById('ortho-table-content');
+      const motsTableContent  = document.getElementById('mots-table-content');
+      const motsCol           = document.getElementById('mots-col');
+      const btnListMots       = document.getElementById('btn-list-mots');
+
+      function renderOrthoTable() {
+        let html = `
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Mot(s)</th>
+                <th style="text-align:center;">Total</th>
+                <th style="text-align:center;">Statut</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+
+        orthoData.forEach(row => {
+          const date = new Date(row.Date).toLocaleDateString('fr-FR', {
+            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+          });
+
+          let motDisplay;
+          if (!row.Total) {
+            motDisplay = 'Aucun';
+          } else if (!row.Mot) {
+            motDisplay = '<em>Plusieurs</em>';
+          } else {
+            motDisplay = escapeHtml(row.Mot);
+          }
+
+          const statusClass = row.Complet ? 'status-complet' : 'status-incomplet';
+          const statusText  = row.Complet ? 'Complet' : 'Incomplet';
+          const hasMot      = !!row.Mot;
+
+          let rowClass = 'ortho-row';
+          if (hasMot) rowClass += ' clickable';
+          if (selectedMot && hasMot) {
+            rowClass += row.Mot === selectedMot ? ' highlighted' : ' dimmed';
+          }
+
+          html += `
+            <tr class="${rowClass}" data-mot="${escapeHtml(row.Mot || '')}">
+              <td style="font-size:0.85rem;">${date}</td>
+              <td style="color:var(--accent); font-weight:700;">${motDisplay}</td>
+              <td style="text-align:center; font-weight:700;">${row.Total || 0}</td>
+              <td style="text-align:center;"><span class="status-badge ${statusClass}">${statusText}</span></td>
+            </tr>
+          `;
+        });
+
+        html += '</tbody></table>';
+        orthoTableContent.innerHTML = html;
+      }
+
+      function renderMotsList() {
+        let html = `<div class="word-list">
+          <div class="word-list-header">Mots (${motsData.length})</div>
+        `;
+
+        motsData.forEach(item => {
+          let cls = 'word-item';
+          if (selectedMot) {
+            cls += item.Mot === selectedMot ? ' active' : ' dimmed';
+          }
+          html += `<div class="${cls}" data-mot="${escapeHtml(item.Mot)}">${escapeHtml(item.Mot)}</div>`;
+        });
+
+        html += '</div>';
+        motsTableContent.innerHTML = html;
+      }
+
+      function scrollToActive(container, selector) {
+        const el = container.querySelector(selector);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+
+      // Clic sur une ligne du tableau orthophoniste
+      orthoTableContent.addEventListener('click', (e) => {
+        const row = e.target.closest('tr.ortho-row[data-mot]');
+        if (!row || !row.dataset.mot) return;
+        selectedMot = selectedMot === row.dataset.mot ? null : row.dataset.mot;
+        renderOrthoTable();
+        if (motsCol.style.display === 'block') {
+          renderMotsList();
+          if (selectedMot) scrollToActive(motsTableContent, '.word-item.active');
+        }
+      });
+
+      // Clic sur un mot dans la liste
+      motsTableContent.addEventListener('click', (e) => {
+        const item = e.target.closest('.word-item[data-mot]');
+        if (!item) return;
+        selectedMot = selectedMot === item.dataset.mot ? null : item.dataset.mot;
+        renderMotsList();
+        renderOrthoTable();
+        if (selectedMot) scrollToActive(orthoTableContent, 'tr.highlighted');
+      });
+
+      // Bouton "Liste de mots en J"
       document.getElementById('btn-list-j').addEventListener('click', async () => {
-        const container = document.getElementById('ortho-data-container');
-        container.style.display = 'block';
-        container.innerHTML = '<p style="text-align:center; margin-top:20px; color:var(--subtext-color);">Chargement...</p>';
+        orthoContainer.style.display = 'block';
+        orthoTableContent.innerHTML = '<p style="text-align:center; margin-top:20px; color:var(--subtext-color);">Chargement...</p>';
+        selectedMot = null;
 
         try {
           const response = await apiFetch(`${API_BASE}/api/orthophoniste`);
           if (!response.ok) throw new Error(`Erreur ${response.status}`);
-          const data = await response.json();
-
-          let html = `
-            <table class="data-table">
-              <thead><tr><th>Date</th><th>Mot(s)</th><th style="text-align:center;">Total</th><th style="text-align:center;">Statut</th></tr></thead>
-              <tbody>
-          `;
-
-          data.forEach(row => {
-            const date = new Date(row.Date).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-
-            let motDisplay;
-            if (row.Total === 0) {
-              motDisplay = '<em>Aucun</em>';
-            } else if (!row.Mot) {
-              motDisplay = '<em>Plusieurs</em>';
-            } else {
-              motDisplay = escapeHtml(row.Mot);
-            }
-            const statusClass = row.Complet ? 'status-complet' : 'status-incomplet';
-            const statusText = row.Complet ? 'Complet' : 'Incomplet';
-            html += `
-              <tr>
-                <td style="font-size:0.85rem;">${date}</td>
-                <td style="color:var(--accent); font-weight:700;">${motDisplay}</td>
-                <td style="text-align:center; font-weight:700;">${row.Total || 0}</td>
-                <td style="text-align:center;"><span class="status-badge ${statusClass}">${statusText}</span></td>
-              </tr>
-            `;
-          });
-          html += '</tbody></table>';
-          container.innerHTML = html;
+          orthoData = await response.json();
+          renderOrthoTable();
+          // Raffraîchir la liste si elle est déjà ouverte
+          if (motsCol.style.display === 'block') renderMotsList();
+          btnListMots.style.display = 'block';
         } catch (err) {
-          container.innerHTML = '<p style="color:#ff4d4d; text-align:center;">Erreur lors du chargement.</p>';
+          orthoTableContent.innerHTML = '<p style="color:#ff4d4d; text-align:center;">Erreur lors du chargement.</p>';
         }
+      });
+
+      // Bouton "Liste de mots" — toggle la colonne gauche
+      btnListMots.addEventListener('click', async () => {
+        if (motsCol.style.display === 'block') {
+          motsCol.style.display = 'none';
+          selectedMot = null;
+          renderOrthoTable();
+          btnListMots.textContent = '📋 Liste de mots';
+          return;
+        }
+
+        motsCol.style.display = 'block';
+        btnListMots.textContent = '✕ Masquer les mots';
+
+        if (motsData.length === 0) {
+          motsTableContent.innerHTML = '<p style="text-align:center; color:var(--subtext-color);">Chargement...</p>';
+          try {
+            const response = await apiFetch(`${API_BASE}/api/mots`);
+            if (!response.ok) throw new Error(`Erreur ${response.status}`);
+            motsData = await response.json();
+          } catch (err) {
+            motsTableContent.innerHTML = '<p style="color:#ff4d4d; text-align:center;">Erreur lors du chargement.</p>';
+            return;
+          }
+        }
+
+        renderMotsList();
       });
 
       const submitImport = document.getElementById('submit-import');
