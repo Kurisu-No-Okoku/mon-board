@@ -1,6 +1,6 @@
 {
   "name": "web-nathanael",
-  "version": "1.10.1",
+  "version": "1.11.0",
   "description": "Site statique avec API pour récupérer les libellés de boutons depuis SQL Server.",
   "main": "server.js",
   "scripts": {

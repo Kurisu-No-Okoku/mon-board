@@ -8,7 +8,7 @@ const bcrypt = require('bcrypt');
 const app = express();
 const port = process.env.PORT || 3000;
 const publicHost = process.env.PUBLIC_URL || `http://100.99.13.22:${port}`;
-const apiVersion = '1.10.1';
+const apiVersion = '1.11.0';
 
 // FIX: suppression de la référence à `host` qui n'était pas défini (ReferenceError)
 const dbConfig = {

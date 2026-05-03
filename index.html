@@ -458,6 +458,120 @@
 
       .ortho-row.dimmed { opacity: 0.25; }
 
+      /* Release notes accordion */
+      .release-drawer,
+      .release-collapse {
+        border: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .release-drawer > summary,
+      .release-collapse > summary {
+        list-style: none;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .release-drawer > summary::-webkit-details-marker,
+      .release-collapse > summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .release-drawer > summary {
+        padding: 11px 18px;
+        background-color: var(--button-bg);
+        border: 1px solid var(--panel-border);
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: var(--accent);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: background-color 0.15s ease;
+      }
+
+      .release-drawer > summary:hover {
+        background-color: var(--btn-hover);
+      }
+
+      .release-drawer > summary::before {
+        content: '▶';
+        font-size: 0.65em;
+        transition: transform 0.2s ease;
+        flex-shrink: 0;
+      }
+
+      .release-drawer[open] > summary::before {
+        transform: rotate(90deg);
+      }
+
+      .release-drawer-content {
+        margin-top: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .release-collapse {
+        border-left: 3px solid var(--accent);
+        border-radius: 0 8px 8px 0;
+        overflow: hidden;
+        opacity: 0.85;
+      }
+
+      .release-collapse > summary {
+        padding: 9px 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background-color: rgba(255, 255, 255, 0.02);
+        transition: background-color 0.12s ease;
+      }
+
+      .release-collapse > summary:hover {
+        background-color: rgba(138, 165, 195, 0.1);
+      }
+
+      .release-collapse > summary::before {
+        content: '▶';
+        font-size: 0.6em;
+        transition: transform 0.2s ease;
+        flex-shrink: 0;
+        color: var(--accent);
+        opacity: 0.8;
+      }
+
+      .release-collapse[open] > summary::before {
+        transform: rotate(90deg);
+      }
+
+      .release-collapse-title {
+        color: var(--accent);
+        font-weight: 700;
+        font-size: 0.95rem;
+        flex: 1;
+      }
+
+      .release-collapse-date {
+        font-size: 0.8rem;
+        color: var(--subtext-color);
+        flex-shrink: 0;
+      }
+
+      .release-collapse-body {
+        padding: 6px 14px 12px 14px;
+      }
+
+      .release-collapse-body ul {
+        margin: 0;
+        padding-left: 18px;
+        color: var(--panel-text-color);
+        line-height: 1.6;
+        font-size: 0.92rem;
+      }
+
       @media (max-width: 730px) {
         .page-wrapper {
           gap: 0;
@@ -573,143 +687,182 @@
           <div style="text-align: left;">
             <h2 style="margin-bottom: 20px;">📢 Notes de version</h2>
 
-            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 30px;">
-              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.10.1 - Correctifs UI double tableau</h3>
-              <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 3 Mai 2026</p>
+            <!-- Dernière release — toujours visible -->
+            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 24px;">
+              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.11.0 - Accordéon releases &amp; Fix alignement mots</h3>
+              <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 4 Mai 2026</p>
               <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
-                <li><b>Fix (UI) :</b> La colonne "Liste de mots" ne dépasse plus la hauteur du tableau principal — les deux colonnes s'alignent dynamiquement via flexbox.</li>
-                <li><b>Fix (UI) :</b> Bouton "Nouvelle entrée" ➕ avec un fond légèrement vert pour le distinguer du bouton Import/Export en mode sombre.</li>
+                <li><b>UX (Accueil) :</b> Page d'accueil restructurée — seule la dernière release est visible par défaut, les versions précédentes sont regroupées dans un tiroir accordéon repliable ; chaque release s'ouvre individuellement au clic.</li>
+                <li><b>Fix (UI) :</b> Alignement correct de la colonne "Liste de mots" avec le tableau principal — correction du <code>display: flex</code> au lieu de <code>block</code> lors du toggle.</li>
               </ul>
             </div>
 
-            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 30px;">
-              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.10.0 - Import/Export & Nouvelle entrée</h3>
-              <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 3 Mai 2026</p>
-              <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
-                <li><b>Fonctionnalité :</b> Bouton ↕ Import/Export en haut à droite du titre Orthophoniste — import CSV et export direct en fichier CSV.</li>
-                <li><b>Fonctionnalité (Admin) :</b> Bouton ➕ Nouvelle entrée visible uniquement pour l'admin — saisie manuelle avec recherche ou création automatique du mot dans la table Mots.</li>
-                <li><b>Fix (UI) :</b> Message "En construction" centré correctement dans les sections Sessad, ULIS et Maison.</li>
-              </ul>
-            </div>
+            <!-- Versions précédentes — tiroir fermé par défaut -->
+            <details class="release-drawer">
+              <summary>Versions précédentes (15)</summary>
+              <div class="release-drawer-content">
 
-            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 30px;">
-              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.9.2 - Hotfix navigation bouton "Liste de mots"</h3>
-              <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 3 Mai 2026</p>
-              <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
-                <li><b>Fix (critique) :</b> Le bouton "Liste de mots" partage la classe <code>category-button</code>, ce qui le faisait capturer par le listener de navigation et appelait <code>setCategory(undefined)</code> — fermant le tableau et bloquant le chargement. Ajout d'un guard <code>if (!data-category) return</code>.</li>
-              </ul>
-            </div>
+                <details class="release-collapse">
+                  <summary><span class="release-collapse-title">v1.10.1 - Correctifs UI double tableau</span><span class="release-collapse-date">3 Mai 2026</span></summary>
+                  <div class="release-collapse-body">
+                    <ul>
+                      <li><b>Fix (UI) :</b> La colonne "Liste de mots" ne dépasse plus la hauteur du tableau principal — les deux colonnes s'alignent dynamiquement via flexbox.</li>
+                      <li><b>Fix (UI) :</b> Bouton "Nouvelle entrée" ➕ avec un fond légèrement vert pour le distinguer du bouton Import/Export en mode sombre.</li>
+                    </ul>
+                  </div>
+                </details>
 
-            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 30px; opacity: 0.8;">
-              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.9.1 - Hotfix double tableau</h3>
-              <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 3 Mai 2026</p>
-              <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
-                <li><b>Fix :</b> Colonne "Mot(s)" affichait "Plusieurs" quand Total vaut NULL en base — désormais correctement affiché comme "Aucun".</li>
-                <li><b>Fix :</b> Bouton "Liste de mots" ne déclenchait pas le chargement — comparaison d'état du display corrigée (<code>!== 'none'</code> → <code>=== 'block'</code>) et valeur d'affichage explicite.</li>
-              </ul>
-            </div>
+                <details class="release-collapse">
+                  <summary><span class="release-collapse-title">v1.10.0 - Import/Export &amp; Nouvelle entrée</span><span class="release-collapse-date">3 Mai 2026</span></summary>
+                  <div class="release-collapse-body">
+                    <ul>
+                      <li><b>Fonctionnalité :</b> Bouton ↕ Import/Export en haut à droite du titre Orthophoniste — import CSV et export direct en fichier CSV.</li>
+                      <li><b>Fonctionnalité (Admin) :</b> Bouton ➕ Nouvelle entrée visible uniquement pour l'admin — saisie manuelle avec recherche ou création automatique du mot dans la table Mots.</li>
+                      <li><b>Fix (UI) :</b> Message "En construction" centré correctement dans les sections Sessad, ULIS et Maison.</li>
+                    </ul>
+                  </div>
+                </details>
 
-            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 30px; opacity: 0.8;">
-              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.9.0 - Vue double tableau Orthophoniste</h3>
-              <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 3 Mai 2026</p>
-              <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
-                <li><b>Fonctionnalité :</b> Nouveau bouton "Liste de mots" qui apparaît après le chargement du tableau orthophoniste.</li>
-                <li><b>UI :</b> Affichage en deux colonnes — liste de mots à gauche, tableau de suivi à droite (empilement vertical sur mobile).</li>
-                <li><b>Navigation :</b> Clic sur un mot filtre et surligne les lignes correspondantes dans le tableau ; clic sur une ligne surligne le mot dans la liste.</li>
-                <li><b>Fix :</b> La colonne "Mot(s)" affiche désormais "Aucun" (sans italique) quand le total est à 0.</li>
-              </ul>
-            </div>
+                <details class="release-collapse">
+                  <summary><span class="release-collapse-title">v1.9.2 - Hotfix navigation bouton "Liste de mots"</span><span class="release-collapse-date">3 Mai 2026</span></summary>
+                  <div class="release-collapse-body">
+                    <ul>
+                      <li><b>Fix (critique) :</b> Le bouton "Liste de mots" partage la classe <code>category-button</code>, ce qui le faisait capturer par le listener de navigation et appelait <code>setCategory(undefined)</code> — fermant le tableau et bloquant le chargement. Ajout d'un guard <code>if (!data-category) return</code>.</li>
+                    </ul>
+                  </div>
+                </details>
 
-            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 30px; opacity: 0.8;">
-              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.8.0 - Sécurité & Authentification</h3>
-              <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 3 Mai 2026</p>
-              <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
-                <li><b>Sécurité (Auth) :</b> Mise en place d'un système de tokens de session côté serveur — chaque connexion génère un token unique invalidé à la déconnexion.</li>
-                <li><b>Sécurité (Endpoints) :</b> Protection des routes API par rôle : les endpoints admin exigent désormais un rôle Admin, les autres un utilisateur connecté.</li>
-                <li><b>Sécurité (XSS) :</b> Échappement HTML systématique dans la modale de gestion des utilisateurs et dans les réponses serveur.</li>
-                <li><b>Login :</b> Seul le compte Admin peut se connecter sans mot de passe — les autres comptes en attente reçoivent un message d'erreur explicite.</li>
-                <li><b>Fix (Runtime) :</b> Correction de la variable <code>host</code> non définie dans la config SQL Server (ReferenceError au démarrage).</li>
-                <li><b>Fix (UI) :</b> Correction des éléments manquants dans le DOM (<code>construction-message</code>).</li>
-                <li><b>UI :</b> Correction du hover du bouton Accueil en thème clair, fusion du CSS dupliqué, ajout de l'animation fadeIn.</li>
-              </ul>
-            </div>
+                <details class="release-collapse">
+                  <summary><span class="release-collapse-title">v1.9.1 - Hotfix double tableau</span><span class="release-collapse-date">3 Mai 2026</span></summary>
+                  <div class="release-collapse-body">
+                    <ul>
+                      <li><b>Fix :</b> Colonne "Mot(s)" affichait "Plusieurs" quand Total vaut NULL en base — désormais correctement affiché comme "Aucun".</li>
+                      <li><b>Fix :</b> Bouton "Liste de mots" ne déclenchait pas le chargement — comparaison d'état du display corrigée et valeur d'affichage explicite.</li>
+                    </ul>
+                  </div>
+                </details>
 
-            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 30px; opacity: 0.8;">
-              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.7.5 - Navigation & UI Fixes</h3>
-              <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 3 Mai 2026</p>
-              <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
-                <li><b>Fix (Navigation) :</b> Correction de la logique d'affichage des catégories pour éviter les retours inattendus à l'accueil.</li>
-                <li><b>Fix (UI) :</b> Amélioration du style et du centrage du bouton de réinitialisation de mot de passe dans la modale "Mon Compte".</li>
-                <li><b>Synchronisation :</b> Mise à jour de la version du site et de l'API à v1.7.5.</li>
-              </ul>
-            </div>
+                <details class="release-collapse">
+                  <summary><span class="release-collapse-title">v1.9.0 - Vue double tableau Orthophoniste</span><span class="release-collapse-date">3 Mai 2026</span></summary>
+                  <div class="release-collapse-body">
+                    <ul>
+                      <li><b>Fonctionnalité :</b> Nouveau bouton "Liste de mots" qui apparaît après le chargement du tableau orthophoniste.</li>
+                      <li><b>UI :</b> Affichage en deux colonnes — liste de mots à gauche, tableau de suivi à droite (empilement vertical sur mobile).</li>
+                      <li><b>Navigation :</b> Clic sur un mot filtre et surligne les lignes correspondantes dans le tableau ; clic sur une ligne surligne le mot dans la liste.</li>
+                      <li><b>Fix :</b> La colonne "Mot(s)" affiche désormais "Aucun" (sans italique) quand le total est à 0.</li>
+                    </ul>
+                  </div>
+                </details>
 
-            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 30px; opacity: 0.8;">
-              <h3 style="margin: 0; color: var(--accent); font-size: 1.1rem;">v1.7.4 - Accès Extérieur & Cloud Ready</h3>
-              <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
-                <li>Support des accès via domaines externes et détection dynamique de l'URL de l'API.</li>
-              </ul>
-            </div>
+                <details class="release-collapse">
+                  <summary><span class="release-collapse-title">v1.8.0 - Sécurité &amp; Authentification</span><span class="release-collapse-date">3 Mai 2026</span></summary>
+                  <div class="release-collapse-body">
+                    <ul>
+                      <li><b>Sécurité (Auth) :</b> Mise en place d'un système de tokens de session côté serveur — chaque connexion génère un token unique invalidé à la déconnexion.</li>
+                      <li><b>Sécurité (Endpoints) :</b> Protection des routes API par rôle : les endpoints admin exigent désormais un rôle Admin, les autres un utilisateur connecté.</li>
+                      <li><b>Sécurité (XSS) :</b> Échappement HTML systématique dans la modale de gestion des utilisateurs et dans les réponses serveur.</li>
+                      <li><b>Login :</b> Seul le compte Admin peut se connecter sans mot de passe — les autres comptes en attente reçoivent un message d'erreur explicite.</li>
+                      <li><b>Fix (Runtime) :</b> Correction de la variable <code>host</code> non définie dans la config SQL Server (ReferenceError au démarrage).</li>
+                      <li><b>Fix (UI) :</b> Correction des éléments manquants dans le DOM (<code>construction-message</code>).</li>
+                      <li><b>UI :</b> Correction du hover du bouton Accueil en thème clair, fusion du CSS dupliqué, ajout de l'animation fadeIn.</li>
+                    </ul>
+                  </div>
+                </details>
 
-            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 30px; opacity: 0.7;">
-              <h3 style="margin: 0; color: var(--accent); font-size: 1.1rem;">v1.7.3 - Orthophoniste & Import Fix</h3>
-              <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
-                <li>Finalisation de l'affichage dynamique des mots et du suivi orthophoniste.</li>
-                <li>Nouveau parser CSV ultra-robuste capable de détecter la date n'importe où dans la ligne.</li>
-                <li>Affichage complet des informations de compte incluant l'adresse e-mail.</li>
-              </ul>
-            </div>
+                <details class="release-collapse">
+                  <summary><span class="release-collapse-title">v1.7.5 - Navigation &amp; UI Fixes</span><span class="release-collapse-date">3 Mai 2026</span></summary>
+                  <div class="release-collapse-body">
+                    <ul>
+                      <li><b>Fix (Navigation) :</b> Correction de la logique d'affichage des catégories pour éviter les retours inattendus à l'accueil.</li>
+                      <li><b>Fix (UI) :</b> Amélioration du style et du centrage du bouton de réinitialisation de mot de passe dans la modale "Mon Compte".</li>
+                      <li><b>Synchronisation :</b> Mise à jour de la version du site et de l'API à v1.7.5.</li>
+                    </ul>
+                  </div>
+                </details>
 
-            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 30px;">
-              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.7.0 - Parser CSV Auto-adaptatif</h3>
-              <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 3 Mai 2026</p>
-              <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
-                <li><b>Fix (Parser) :</b> Détection dynamique de la colonne date pour supporter les exports Numbers/Excel avec colonnes vides.</li>
-                <li><b>Synchronisation :</b> Harmonisation de la version v1.7.0 sur l'ensemble du projet (Site, API, Package).</li>
-                <li><b>Stabilité :</b> Amélioration du typage des données lors de l'insertion SQL (sécurité sur les valeurs NULL).</li>
-              </ul>
-            </div>
+                <details class="release-collapse">
+                  <summary><span class="release-collapse-title">v1.7.4 - Accès Extérieur &amp; Cloud Ready</span></summary>
+                  <div class="release-collapse-body">
+                    <ul>
+                      <li>Support des accès via domaines externes et détection dynamique de l'URL de l'API.</li>
+                    </ul>
+                  </div>
+                </details>
 
-            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 30px;">
-              <h3 style="margin: 0; color: var(--accent); font-size: 1.1rem;">v1.6.9 - Stabilité Import</h3>
-              <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
-                <li>Nettoyage des doublons de code dans le serveur API.</li>
-              </ul>
-            </div>
+                <details class="release-collapse">
+                  <summary><span class="release-collapse-title">v1.7.3 - Orthophoniste &amp; Import Fix</span></summary>
+                  <div class="release-collapse-body">
+                    <ul>
+                      <li>Finalisation de l'affichage dynamique des mots et du suivi orthophoniste.</li>
+                      <li>Nouveau parser CSV ultra-robuste capable de détecter la date n'importe où dans la ligne.</li>
+                      <li>Affichage complet des informations de compte incluant l'adresse e-mail.</li>
+                    </ul>
+                  </div>
+                </details>
 
-            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 30px;">
-              <h3 style="margin: 0; color: var(--accent); font-size: 1.1rem;">v1.6.8 - Import CSV Orthophoniste</h3>
-              <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 3 Mai 2026</p>
-              <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
-                <li><b>Fonctionnalité :</b> Ajout d'un endpoint API pour l'importation de données CSV dans les tables Mots et Orthophoniste.</li>
-                <li><b>Parsing :</b> Support des mots uniques et des listes de mots pour le suivi.</li>
-              </ul>
-            </div>
+                <details class="release-collapse">
+                  <summary><span class="release-collapse-title">v1.7.0 - Parser CSV Auto-adaptatif</span><span class="release-collapse-date">3 Mai 2026</span></summary>
+                  <div class="release-collapse-body">
+                    <ul>
+                      <li><b>Fix (Parser) :</b> Détection dynamique de la colonne date pour supporter les exports Numbers/Excel avec colonnes vides.</li>
+                      <li><b>Synchronisation :</b> Harmonisation de la version v1.7.0 sur l'ensemble du projet (Site, API, Package).</li>
+                      <li><b>Stabilité :</b> Amélioration du typage des données lors de l'insertion SQL (sécurité sur les valeurs NULL).</li>
+                    </ul>
+                  </div>
+                </details>
 
-            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 30px; opacity: 0.7;">
-              <h3 style="margin: 0; color: var(--accent); font-size: 1.1rem;">v1.6.6 - Stabilité & Logs</h3>
-              <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
-                <li>Synchronisation des versions site/API et ajout de logs de diagnostic pour le login.</li>
-              </ul>
-            </div>
+                <details class="release-collapse">
+                  <summary><span class="release-collapse-title">v1.6.9 - Stabilité Import</span></summary>
+                  <div class="release-collapse-body">
+                    <ul>
+                      <li>Nettoyage des doublons de code dans le serveur API.</li>
+                    </ul>
+                  </div>
+                </details>
 
-            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 30px;">
-              <h3 style="margin: 0; color: var(--accent); font-size: 1.1rem;">v1.6.4 - Import CSV & Tables</h3>
-              <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
-                <li><b>Accueil :</b> Remplacement de la bannière de construction par un journal des modifications complet.</li>
-                <li><b>Navigation :</b> Redirection systématique vers l'accueil après chaque connexion ou rechargement.</li>
-                <li><b>UX :</b> Harmonisation visuelle des boutons d'activation et amélioration des libellés.</li>
-              </ul>
-            </div>
+                <details class="release-collapse">
+                  <summary><span class="release-collapse-title">v1.6.8 - Import CSV Orthophoniste</span><span class="release-collapse-date">3 Mai 2026</span></summary>
+                  <div class="release-collapse-body">
+                    <ul>
+                      <li><b>Fonctionnalité :</b> Ajout d'un endpoint API pour l'importation de données CSV dans les tables Mots et Orthophoniste.</li>
+                      <li><b>Parsing :</b> Support des mots uniques et des listes de mots pour le suivi.</li>
+                    </ul>
+                  </div>
+                </details>
 
-            <div class="release-item" style="border-left: 4px solid var(--panel-border); padding-left: 20px; margin-bottom: 20px; opacity: 0.8;">
-              <h3 style="margin: 0; color: var(--panel-heading-color); font-size: 1.1rem;">v1.6.2 - Sécurisation & Login</h3>
-              <ul style="margin: 10px 0 0 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.5; font-size: 0.95rem;">
-                <li>Implémentation du hachage de mot de passe avec Bcrypt pour protéger vos accès.</li>
-                <li>Nouveau système de demande d'activation de compte par e-mail.</li>
-                <li>Ajout de l'option "Mémoriser mes identifiants" via le stockage local sécurisé.</li>
-              </ul>
-            </div>
+                <details class="release-collapse">
+                  <summary><span class="release-collapse-title">v1.6.6 - Stabilité &amp; Logs</span></summary>
+                  <div class="release-collapse-body">
+                    <ul>
+                      <li>Synchronisation des versions site/API et ajout de logs de diagnostic pour le login.</li>
+                    </ul>
+                  </div>
+                </details>
+
+                <details class="release-collapse">
+                  <summary><span class="release-collapse-title">v1.6.4 - Import CSV &amp; Tables</span></summary>
+                  <div class="release-collapse-body">
+                    <ul>
+                      <li><b>Accueil :</b> Remplacement de la bannière de construction par un journal des modifications complet.</li>
+                      <li><b>Navigation :</b> Redirection systématique vers l'accueil après chaque connexion ou rechargement.</li>
+                      <li><b>UX :</b> Harmonisation visuelle des boutons d'activation et amélioration des libellés.</li>
+                    </ul>
+                  </div>
+                </details>
+
+                <details class="release-collapse">
+                  <summary><span class="release-collapse-title">v1.6.2 - Sécurisation &amp; Login</span></summary>
+                  <div class="release-collapse-body">
+                    <ul>
+                      <li>Implémentation du hachage de mot de passe avec Bcrypt pour protéger vos accès.</li>
+                      <li>Nouveau système de demande d'activation de compte par e-mail.</li>
+                      <li>Ajout de l'option "Mémoriser mes identifiants" via le stockage local sécurisé.</li>
+                    </ul>
+                  </div>
+                </details>
+
+              </div>
+            </details>
           </div>
         </div>
 
@@ -814,7 +967,7 @@
       </div>
 
     <footer class="page-footer">
-      <p>© 2026 Christophe Lambert • Site v1.10.1 • API <span id="api-version">...</span></p>
+      <p>© 2026 Christophe Lambert • Site v1.11.0 • API <span id="api-version">...</span></p>
     </footer>
 
     <script>
@@ -1391,7 +1544,7 @@
         if (!row || !row.dataset.mot) return;
         selectedMot = selectedMot === row.dataset.mot ? null : row.dataset.mot;
         renderOrthoTable();
-        if (motsCol.style.display === 'block') {
+        if (motsCol.style.display !== 'none') {
           renderMotsList();
           if (selectedMot) scrollToActive(motsTableContent, '.word-item.active');
         }
@@ -1419,7 +1572,7 @@
           orthoData = await response.json();
           renderOrthoTable();
           // Raffraîchir la liste si elle est déjà ouverte
-          if (motsCol.style.display === 'block') renderMotsList();
+          if (motsCol.style.display !== 'none') renderMotsList();
           btnListMots.style.display = 'block';
         } catch (err) {
           orthoTableContent.innerHTML = '<p style="color:#ff4d4d; text-align:center;">Erreur lors du chargement.</p>';
@@ -1428,7 +1581,7 @@
 
       // Bouton "Liste de mots" — toggle la colonne gauche
       btnListMots.addEventListener('click', async () => {
-        if (motsCol.style.display === 'block') {
+        if (motsCol.style.display !== 'none') {
           motsCol.style.display = 'none';
           selectedMot = null;
           renderOrthoTable();
@@ -1436,7 +1589,7 @@
           return;
         }
 
-        motsCol.style.display = 'block';
+        motsCol.style.display = 'flex';
         btnListMots.textContent = '✕ Masquer les mots';
 
         if (motsData.length === 0) {
