@@ -9,7 +9,7 @@ const bcrypt = require('bcrypt');
 const app = express();
 const port = process.env.PORT || 3000;
 const host = '100.99.13.22';
-const apiVersion = '1.6.6'; 
+const apiVersion = '1.6.7'; 
  
 const dbConfig = {
   user: process.env.DB_USER,
@@ -158,7 +158,7 @@ app.post('/api/login', async (req, res) => {
     await poolConnect;
     const result = await pool.request()
       .input('username', sql.NVarChar, username.trim())
-      .query('SELECT UserID, Username, Role, MotDePasseIsActive, PasswordHash FROM Utilisateurs WHERE Username = @username');
+      .query('SELECT UserID, Username, Email, Role, MotDePasseIsActive, PasswordHash FROM Utilisateurs WHERE Username = @username');
 
     if (result.recordset.length > 0) {
       const user = result.recordset[0];

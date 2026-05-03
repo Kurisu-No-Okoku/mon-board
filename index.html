@@ -453,22 +453,19 @@
             <h2 style="margin-bottom: 20px;">📢 Notes de version</h2>
             
             <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 30px;">
-              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.6.6 - Synchronisation des versions & Correctifs</h3>
+              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.6.7 - Profil & Information de Compte</h3>
               <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 3 Mai 2026</p>
               <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
-                <li><b>Synchronisation :</b> Mise à jour de la version du site pour correspondre à celle de l'API (v1.6.6).</li>
-                <li><b>Fix (API) :</b> Ajout de logs détaillés pour le processus de connexion et de réinitialisation de mot de passe.</li>
-                <li><b>Fix (API) :</b> Vérification de l'existence de l'utilisateur lors de la réinitialisation du mot de passe.</li>
-                <li><b>Robustesse (API) :</b> Ajout d'un `trim()` sur le nom d'utilisateur reçu par l'API pour éviter les problèmes d'espaces.</li>
-                <li><b>Recommandation :</b> Rappel d'une vérification de la taille de la colonne `PasswordHash` en base de données (doit être `NVARCHAR(255)`).</li>
+                <li><b>Profil :</b> L'adresse e-mail est désormais affichée dans les informations du compte.</li>
+                <li><b>Admin :</b> L'interface d'administration affiche désormais les informations personnelles de l'admin en haut de la liste de gestion.</li>
+                <li><b>Fix :</b> Récupération automatique de l'e-mail lors de la connexion pour affichage immédiat.</li>
               </ul>
             </div>
 
-            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 30px; opacity: 0.8;">
-              <h3 style="margin: 0; color: var(--accent); font-size: 1.1rem;">v1.6.5 - Correctif Reset Password</h3>
+            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 30px; opacity: 0.7;">
+              <h3 style="margin: 0; color: var(--accent); font-size: 1.1rem;">v1.6.6 - Stabilité & Logs</h3>
               <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
-                <li><b>Fix :</b> Correction du port dans les liens d'e-mail (passage du port 5500 au port 3000 pour Docker).</li>
-                <li><b>Refactoring :</b> Centralisation de la génération des liens de réinitialisation.</li>
+                <li>Synchronisation des versions site/API et ajout de logs de diagnostic pour le login.</li>
               </ul>
             </div>
 
@@ -519,7 +516,7 @@
       </div>
 
     <footer class="page-footer">
-      <p>© 2026 Christophe Lambert • Site v1.6.6 • API <span id="api-version">...</span></p>
+      <p>© 2026 Christophe Lambert • Site v1.6.7 • API <span id="api-version">...</span></p>
     </footer>
 
     <script>
@@ -680,18 +677,27 @@
       const showAccountInfo = async () => {
         const role = localStorage.getItem('currentRole');
         const username = localStorage.getItem('currentUser');
+        const email = localStorage.getItem('currentEmail');
         const modalTitle = document.querySelector('#admin-modal h2');
 
+        let personalInfoHtml = `
+          <div style="padding: 10px 0;">
+            <p><strong>Utilisateur :</strong> ${username}</p>
+            <p><strong>E-mail :</strong> ${email || 'Connectez-vous à nouveau pour voir l\'e-mail'}</p>
+            <p><strong>Rôle :</strong> ${role || 'Utilisateur'}</p>
+            <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--panel-border);">
+        `;
+
         if (role === 'Admin') {
-          modalTitle.textContent = 'Gestion des Utilisateurs';
+          modalTitle.textContent = 'Administration & Compte';
+          usersListContainer.innerHTML = personalInfoHtml + `
+            <h3>Gestion des Utilisateurs</h3>
+            <div id="admin-users-list-target">Chargement...</div>
+          </div>`;
           await loadUsers();
         } else {
           modalTitle.textContent = 'Mon Compte';
-          usersListContainer.innerHTML = `
-            <div style="padding: 10px 0;">
-              <p><strong>Utilisateur :</strong> ${username}</p>
-              <p><strong>Rôle :</strong> ${role || 'Utilisateur'}</p>
-              <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--panel-border);">
+          usersListContainer.innerHTML = personalInfoHtml + `
               <h3>Sécurité</h3>
               <p style="color: var(--panel-text-color); margin-bottom: 15px;">Pour modifier votre mot de passe, demandez un lien de réinitialisation par e-mail :</p>
               <button class="btn-resend" onclick="resendReset('${username}', this)">M'envoyer un lien de réinitialisation</button>
@@ -705,12 +711,14 @@
       };
 
       const loadUsers = async () => {
-        usersListContainer.innerHTML = 'Chargement des utilisateurs...';
+        const target = document.getElementById('admin-users-list-target');
+        if (!target) return;
+        target.innerHTML = 'Chargement des utilisateurs...';
         try {
           const response = await fetch(`${API_BASE}/api/users`);
           const users = await response.json();
           
-          usersListContainer.innerHTML = users.map(user => `
+          target.innerHTML = users.map(user => `
             <div class="user-item">
               <div>
                 <strong style="color: ${user.MotDePasseIsActive ? 'inherit' : '#94a2b6'}">${user.Username}</strong><br>
@@ -839,6 +847,7 @@
           if (!isAutoLogin) {
             localStorage.setItem('currentUser', username);
             localStorage.setItem('currentRole', userData.Role || 'User');
+            localStorage.setItem('currentEmail', userData.Email || '');
             if (rememberMe.checked) {
               localStorage.setItem('rememberedUser', username);
             } else {
@@ -912,6 +921,7 @@
         
         localStorage.removeItem('currentUser');
         localStorage.removeItem('currentRole');
+        localStorage.removeItem('currentEmail');
         loginError.style.display = 'none';
       });
 
