@@ -406,7 +406,7 @@
       </section>
 
     <footer class="page-footer">
-      <p>© 2026 Christophe Lambert • v1.4.4</p>
+      <p>© 2026 Christophe Lambert • Site v1.4.5 • API <span id="api-version">...</span></p>
     </footer>
 
     <script>
@@ -485,6 +485,17 @@
           });
         } catch (error) {
           console.warn('Impossible de charger les libellés de boutons depuis la BDD :', error);
+        }
+      };
+
+      // Récupération de la version de l'API
+      const fetchApiInfo = async () => {
+        try {
+          const response = await fetch('/api/info');
+          const data = await response.json();
+          document.getElementById('api-version').textContent = 'v' + data.version;
+        } catch (e) {
+          document.getElementById('api-version').textContent = 'indisponible';
         }
       };
 
@@ -640,6 +651,7 @@
 
       setTheme('dark');
       loadButtonLabels();
+      fetchApiInfo();
 
       buttons.forEach(button => {
         button.addEventListener('click', () => {

@@ -6,6 +6,7 @@ const nodemailer = require('nodemailer');
 const app = express();
 const port = process.env.PORT || 3000;
 const host = '100.99.13.22';
+const apiVersion = '1.2.0';
 
 const dbConfig = {
   user: process.env.DB_USER,
@@ -28,6 +29,11 @@ pool.on('error', err => {
 
 app.use(express.static(path.join(__dirname)));
 app.use(express.json());
+
+// Endpoint pour vérifier la version et l'état de l'API
+app.get('/api/info', (req, res) => {
+  res.json({ version: apiVersion, status: 'running' });
+});
 
 // Configuration du transporteur Nodemailer
 const transporter = nodemailer.createTransport({
@@ -101,10 +107,17 @@ app.post('/api/login', async (req, res) => {
     await poolConnect;
     const result = await pool.request()
       .input('username', sql.NVarChar, username)
-      .query('SELECT UserID, Username, Role FROM Utilisateurs WHERE Username = @username');
+      .query('SELECT UserID, Username, Role, MotDePasseIsActive FROM Utilisateurs WHERE Username = @username');
 
     if (result.recordset.length > 0) {
-      res.json(result.recordset[0]);
+      const user = result.recordset[0];
+      
+      // Logique sans mot de passe
+      if (user.MotDePasseIsActive === true) {
+        return res.status(401).json({ error: 'Mot de passe requis (non implémenté).' });
+      }
+      
+      res.json(user);
     } else {
       res.status(401).json({ error: 'Utilisateur non reconnu' });
     }
@@ -129,9 +142,9 @@ app.post('/api/activate', async (req, res) => {
       .input('email', sql.NVarChar, email)
       .query(`
         INSERT INTO [dbo].[Utilisateurs] 
-          (Username, Email, PasswordHash, Role, MustResetPassword, UserCreatedBy, LastModificationUserBy)
+          (Username, Email, PasswordHash, Role, MustResetPassword, MotDePasseIsActive, UserCreatedBy, LastModificationUserBy)
         VALUES 
-          (@login, @email, 'WAITING_FOR_HASH', 'User', 1, @login, @login)
+          (@login, @email, 'WAITING_FOR_HASH', 'User', 1, 0, @login, @login)
       `);
 
     console.log(`Utilisateur ${login} inséré en base (en attente).`);
@@ -164,5 +177,5 @@ app.post('/api/activate', async (req, res) => {
 });
 
 app.listen(port, '0.0.0.0', () => {
-  console.log(`Server running and accessible on http://${host}:${port}`);
+  console.log(`Server v${apiVersion} running on http://${host}:${port}`);
 });
