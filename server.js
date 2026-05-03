@@ -23,6 +23,12 @@ const dbConfig = {
 const pool = new sql.ConnectionPool(dbConfig);
 const poolConnect = pool.connect();
 
+poolConnect.then(() => {
+  console.log('✅ Connexion réussie à SQL Server sur :', dbConfig.server);
+}).catch(err => {
+  console.error('❌ Erreur de connexion à la base de données :', err.message);
+});
+
 pool.on('error', err => {
   console.error('SQL Pool Error:', err);
 });
