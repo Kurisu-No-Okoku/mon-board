@@ -471,6 +471,7 @@
 
       const loadButtonLabels = async () => {
         try {
+          console.log("Tentative de chargement des libellés...");
           const response = await fetch('/api/buttons');
           if (!response.ok) {
             throw new Error(`Erreur HTTP: ${response.status}`);
@@ -493,10 +494,12 @@
       // Récupération de la version de l'API
       const fetchApiInfo = async () => {
         try {
+          console.log("Récupération des infos API...");
           const response = await fetch('/api/info');
           if (!response.ok) throw new Error();
           const data = await response.json();
           document.getElementById('api-version').textContent = 'v' + data.version;
+          console.log("Version API chargée :", data.version);
         } catch (e) {
           console.error("Erreur fetchApiInfo:", e);
           document.getElementById('api-version').textContent = 'indisponible';
@@ -611,6 +614,7 @@
       // Logique de connexion
       loginSubmit.addEventListener('click', async () => {
         const username = loginInput.value.trim();
+        console.log("Tentative de login pour :", username);
         if (!username) return;
 
         loginError.style.display = 'none';

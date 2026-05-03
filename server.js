@@ -33,8 +33,13 @@ pool.on('error', err => {
   console.error('SQL Pool Error:', err);
 });
 
-app.use(express.static(path.join(__dirname)));
 app.use(express.json());
+
+// Log de chaque requête pour debug
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  next();
+});
 
 // Endpoint pour vérifier la version et l'état de l'API
 app.get('/api/info', (req, res) => {
@@ -180,6 +185,14 @@ app.post('/api/activate', async (req, res) => {
     console.error('Erreur API /api/activate:', error);
     res.status(500).json({ error: 'Erreur lors de l\'envoi des e-mails.' });
   }
+});
+
+// Servir les fichiers statiques
+app.use(express.static(path.join(__dirname)));
+
+// S'assurer que la racine renvoie bien l'index.html
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.listen(port, '0.0.0.0', () => {
