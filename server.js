@@ -6,7 +6,7 @@ const nodemailer = require('nodemailer');
 const app = express();
 const port = process.env.PORT || 3000;
 const host = '100.99.13.22';
-const apiVersion = '1.6.0';
+const apiVersion = '1.6.1';
 
 const dbConfig = {
   user: process.env.DB_USER,

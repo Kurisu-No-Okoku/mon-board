@@ -467,7 +467,7 @@
       </div>
 
     <footer class="page-footer">
-      <p>© 2026 Christophe Lambert • Site v1.6.0 • API <span id="api-version">...</span></p>
+      <p>© 2026 Christophe Lambert • Site v1.6.1 • API <span id="api-version">...</span></p>
     </footer>
 
     <script>
@@ -615,12 +615,35 @@
 
       accountButton.addEventListener('click', async () => {
         adminModal.style.display = 'block';
-        await loadUsers();
+        await showAccountInfo();
       });
 
       closeModal.addEventListener('click', () => {
         adminModal.style.display = 'none';
       });
+
+      const showAccountInfo = async () => {
+        const role = localStorage.getItem('currentRole');
+        const username = localStorage.getItem('currentUser');
+        const modalTitle = document.querySelector('#admin-modal h2');
+
+        if (role === 'Admin') {
+          modalTitle.textContent = 'Gestion des Utilisateurs';
+          await loadUsers();
+        } else {
+          modalTitle.textContent = 'Mon Compte';
+          usersListContainer.innerHTML = `
+            <div style="padding: 10px 0;">
+              <p><strong>Utilisateur :</strong> ${username}</p>
+              <p><strong>Rôle :</strong> ${role || 'Utilisateur'}</p>
+              <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--panel-border);">
+              <h3>Sécurité</h3>
+              <p style="color: var(--panel-text-color); margin-bottom: 15px;">Pour modifier votre mot de passe, demandez un lien de réinitialisation par e-mail :</p>
+              <button class="btn-resend" onclick="resendReset('${username}', this)">M'envoyer un lien de réinitialisation</button>
+            </div>
+          `;
+        }
+      };
 
       window.onclick = (event) => {
         if (event.target == adminModal) adminModal.style.display = 'none';
@@ -751,7 +774,16 @@
         }
       });
 
-      const loginUser = (username) => {
+      const loginUser = (userData) => {
+        let username;
+        if (typeof userData === 'object' && userData !== null) {
+          username = userData.Username;
+          localStorage.setItem('currentUser', username);
+          localStorage.setItem('currentRole', userData.Role || 'User');
+        } else {
+          username = userData;
+        }
+
         welcomeMsg.textContent = `Bienvenue ${username}`;
         welcomeMsg.style.display = 'block';
         loginSection.style.display = 'none';
@@ -759,7 +791,6 @@
         categoryNav.style.display = 'flex';
         document.getElementById('category-panel').style.display = 'block';
         userActions.style.display = 'flex';
-        localStorage.setItem('currentUser', username);
         setCategory(defaultCategory);
       };
 
@@ -780,7 +811,7 @@
 
           if (response.ok) {
             const user = await response.json();
-            loginUser(user.Username);
+            loginUser(user);
           } else if (response.status === 401) {
             loginError.textContent = "Identifiant inconnu.";
             loginError.style.display = 'block';
@@ -805,6 +836,7 @@
         welcomeMsg.style.display = 'none';
         loginInput.value = '';
         localStorage.removeItem('currentUser');
+        localStorage.removeItem('currentRole');
         loginError.style.display = 'none';
       });
 
