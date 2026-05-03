@@ -33,6 +33,13 @@ pool.on('error', err => {
   console.error('SQL Pool Error:', err);
 });
 
+// Middleware pour autoriser Live Server (5500) à appeler l'API (3000)
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*"); 
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
+
 app.use(express.json());
 
 // Log de chaque requête pour debug
