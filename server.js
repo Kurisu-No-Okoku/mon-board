@@ -8,7 +8,7 @@ const bcrypt = require('bcrypt');
 const app = express();
 const port = process.env.PORT || 3000;
 const publicHost = process.env.PUBLIC_URL || `http://100.99.13.22:${port}`;
-const apiVersion = '1.9.2';
+const apiVersion = '1.10.1';
 
 // FIX: suppression de la référence à `host` qui n'était pas défini (ReferenceError)
 const dbConfig = {
@@ -598,6 +598,81 @@ app.get('/api/mots', authMiddleware, async (req, res) => {
   } catch (error) {
     console.error('API /api/mots error:', error);
     res.status(500).json({ error: 'Erreur lors de la récupération des mots.' });
+  }
+});
+
+// Protégé admin — ajout manuel d'une entrée orthophoniste
+app.post('/api/orthophoniste', adminMiddleware, async (req, res) => {
+  const { mot, date, total, complet } = req.body;
+
+  if (!date) {
+    return res.status(400).json({ error: 'La date est requise.' });
+  }
+
+  try {
+    await poolConnect;
+    let motId = null;
+
+    if (mot && mot.trim()) {
+      const cleanMot = mot.trim();
+      const motResult = await pool.request()
+        .input('mot', sql.NVarChar, cleanMot)
+        .query('SELECT Id FROM Mots WHERE Mot = @mot');
+
+      if (motResult.recordset.length > 0) {
+        motId = motResult.recordset[0].Id;
+      } else {
+        const insertResult = await pool.request()
+          .input('mot', sql.NVarChar, cleanMot)
+          .query('INSERT INTO Mots (Mot) VALUES (@mot); SELECT SCOPE_IDENTITY() AS Id;');
+        motId = insertResult.recordset[0].Id;
+      }
+    }
+
+    await pool.request()
+      .input('motId', sql.Int, motId)
+      .input('date', sql.DateTime2, new Date(date))
+      .input('total', sql.Int, total !== undefined && total !== null ? parseInt(total, 10) : 0)
+      .input('complet', sql.Bit, complet ? 1 : 0)
+      .query('INSERT INTO Orthophoniste (MotId, Date, Total, Complet) VALUES (@motId, @date, @total, @complet)');
+
+    res.json({ message: 'Entrée ajoutée avec succès.' });
+  } catch (error) {
+    console.error('API POST /api/orthophoniste error:', error);
+    res.status(500).json({ error: "Erreur lors de l'insertion." });
+  }
+});
+
+// Protégé auth — export CSV
+app.get('/api/export-csv', authMiddleware, async (req, res) => {
+  try {
+    await poolConnect;
+    const result = await pool.request().query(`
+      SELECT
+        CONVERT(VARCHAR(10), O.Date, 120) AS Date,
+        ISNULL(M.Mot, '') AS Mot,
+        ISNULL(O.Total, 0) AS Total,
+        CASE WHEN O.Complet = 1 THEN 'Oui' ELSE 'Non' END AS Complet
+      FROM Orthophoniste O
+      LEFT JOIN Mots M ON O.MotId = M.Id
+      ORDER BY O.Date DESC
+    `);
+
+    const toCsv = (v) => {
+      const s = String(v ?? '');
+      return s.includes(',') || s.includes('"') || s.includes('\n') ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+
+    const headers = 'Date,Mot,Total,Complet';
+    const lines = result.recordset.map(r => [r.Date, r.Mot, r.Total, r.Complet].map(toCsv).join(','));
+    const csv = [headers, ...lines].join('\n');
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="orthophoniste-export.csv"');
+    res.send(csv);
+  } catch (error) {
+    console.error('API /api/export-csv error:', error);
+    res.status(500).json({ error: "Erreur lors de l'export CSV." });
   }
 });
 

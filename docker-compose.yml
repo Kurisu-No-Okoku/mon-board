@@ -13,6 +13,7 @@ services:
       DB_DATABASE: "WEB_NATHANAEL"
       DB_PORT: "1433"
       EMAIL_PASSWORD: "hqiqxpoejnjkqunz"
+      PUBLIC_URL: "https://board.kurisu-no-okoku.com"
     restart: unless-stopped
     networks:
       - web-nathanael-network

@@ -392,12 +392,14 @@
       #ortho-tables-row {
         display: flex;
         gap: 20px;
-        align-items: flex-start;
+        align-items: stretch;
       }
 
       #mots-col {
         flex: 0 0 190px;
         min-width: 0;
+        display: flex;
+        flex-direction: column;
       }
 
       #ortho-col {
@@ -410,8 +412,9 @@
         border: 1px solid var(--panel-border);
         border-radius: 12px;
         overflow: hidden;
-        max-height: 540px;
         overflow-y: auto;
+        flex: 1;
+        min-height: 0;
       }
 
       .word-list-header {
@@ -571,6 +574,25 @@
             <h2 style="margin-bottom: 20px;">📢 Notes de version</h2>
 
             <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 30px;">
+              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.10.1 - Correctifs UI double tableau</h3>
+              <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 3 Mai 2026</p>
+              <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
+                <li><b>Fix (UI) :</b> La colonne "Liste de mots" ne dépasse plus la hauteur du tableau principal — les deux colonnes s'alignent dynamiquement via flexbox.</li>
+                <li><b>Fix (UI) :</b> Bouton "Nouvelle entrée" ➕ avec un fond légèrement vert pour le distinguer du bouton Import/Export en mode sombre.</li>
+              </ul>
+            </div>
+
+            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 30px;">
+              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.10.0 - Import/Export & Nouvelle entrée</h3>
+              <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 3 Mai 2026</p>
+              <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
+                <li><b>Fonctionnalité :</b> Bouton ↕ Import/Export en haut à droite du titre Orthophoniste — import CSV et export direct en fichier CSV.</li>
+                <li><b>Fonctionnalité (Admin) :</b> Bouton ➕ Nouvelle entrée visible uniquement pour l'admin — saisie manuelle avec recherche ou création automatique du mot dans la table Mots.</li>
+                <li><b>Fix (UI) :</b> Message "En construction" centré correctement dans les sections Sessad, ULIS et Maison.</li>
+              </ul>
+            </div>
+
+            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 30px;">
               <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.9.2 - Hotfix navigation bouton "Liste de mots"</h3>
               <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 3 Mai 2026</p>
               <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
@@ -692,7 +714,13 @@
         </div>
 
         <div id="content-panel">
-          <h2 id="category-title">Orthophoniste</h2>
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px;">
+            <h2 id="category-title" style="margin: 0;">Orthophoniste</h2>
+            <div id="ortho-header-actions" style="display: none; align-items: center; gap: 8px; flex-shrink: 0;">
+              <button type="button" id="btn-import-export" class="theme-toggle-button" title="Importer / Exporter" aria-label="Importer ou Exporter des données">↕</button>
+              <button type="button" id="btn-nouveau" class="theme-toggle-button" title="Nouvelle entrée" aria-label="Ajouter une nouvelle entrée" style="display: none; background-color: rgba(40, 167, 69, 0.18); border-color: rgba(40, 167, 69, 0.45);">➕</button>
+            </div>
+          </div>
           <p id="category-description">Choisissez une option pour l'orthophoniste. Ces actions restent disponibles sans changer de page.</p>
 
           <div id="category-actions" class="actions-row" style="display: none;">
@@ -711,11 +739,6 @@
             </div>
           </div>
 
-          <div id="import-zone" style="margin-top: 40px; padding: 20px; border: 1px solid var(--panel-border); border-radius: 16px; background: rgba(0,0,0,0.1); display: none;">
-            <h3 style="margin-top: 0; color: var(--accent);">📥 Importer des données</h3>
-            <textarea id="csv-import-area" placeholder="Collez vos données Numbers/Excel ici..." style="width: 100%; height: 100px; padding: 10px; border-radius: 8px; background: var(--button-bg); color: var(--text-color); border: 1px solid var(--panel-border); margin-bottom: 10px; font-family: monospace; font-size: 0.8rem;"></textarea>
-            <button type="button" id="submit-import" class="btn-resend" style="width: 100%;">Lancer l'importation</button>
-          </div>
 
           <!-- FIX: élément manquant, causait un TypeError dans setCategory() -->
           <div id="construction-message" style="display: none;" class="construction-panel">
@@ -739,8 +762,59 @@
         </div>
       </div>
 
+      <!-- Modal Import / Export -->
+      <div id="import-export-modal" class="modal">
+        <div class="modal-content">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="margin: 0;">Importer / Exporter</h2>
+            <button type="button" id="close-import-export-modal" style="background:none; border:none; color:var(--text-color); font-size: 1.5rem; cursor:pointer;">&times;</button>
+          </div>
+          <h3 style="margin-top: 0; color: var(--accent);">📤 Exporter</h3>
+          <p style="color: var(--panel-text-color); font-size: 0.9rem; margin-bottom: 12px;">Télécharger toutes les données orthophoniste au format CSV.</p>
+          <button type="button" id="btn-export-csv" class="btn-resend" style="width: 100%; margin-bottom: 24px;">Télécharger le CSV</button>
+          <hr style="border: 0; border-top: 1px solid var(--panel-border); margin-bottom: 20px;">
+          <h3 style="margin-top: 0; color: var(--accent);">📥 Importer des données</h3>
+          <p style="color: var(--panel-text-color); font-size: 0.9rem; margin-bottom: 10px;">Collez vos données Numbers/Excel au format texte.</p>
+          <textarea id="csv-import-area" placeholder="Collez vos données Numbers/Excel ici..." style="width: 100%; height: 120px; padding: 10px; border-radius: 8px; background: var(--button-bg); color: var(--text-color); border: 1px solid var(--panel-border); margin-bottom: 10px; font-family: monospace; font-size: 0.8rem; box-sizing: border-box;"></textarea>
+          <button type="button" id="submit-import" class="btn-resend" style="width: 100%;">Lancer l'importation</button>
+        </div>
+      </div>
+
+      <!-- Modal Nouvelle entrée (Admin) -->
+      <div id="nouveau-modal" class="modal">
+        <div class="modal-content" style="max-width: 450px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="margin: 0;">Nouvelle entrée</h2>
+            <button type="button" id="close-nouveau-modal" style="background:none; border:none; color:var(--text-color); font-size: 1.5rem; cursor:pointer;">&times;</button>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <div>
+              <label for="nouveau-date" style="display: block; margin-bottom: 6px; font-size: 0.9rem; color: var(--accent); font-weight: 700;">Date *</label>
+              <input type="date" id="nouveau-date" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--panel-border); background: var(--button-bg); color: var(--text-color); font-size: 1rem; box-sizing: border-box;">
+            </div>
+            <div>
+              <label for="nouveau-mot" style="display: block; margin-bottom: 6px; font-size: 0.9rem; color: var(--accent); font-weight: 700;">Mot <span style="font-weight: 400; color: var(--subtext-color);">(optionnel)</span></label>
+              <input type="text" id="nouveau-mot" placeholder="Mot travaillé..." style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--panel-border); background: var(--button-bg); color: var(--text-color); font-size: 1rem; box-sizing: border-box;">
+              <div id="nouveau-mot-hint" style="margin-top: 6px; font-size: 0.8rem; color: var(--subtext-color); display: none;"></div>
+            </div>
+            <div>
+              <label for="nouveau-total" style="display: block; margin-bottom: 6px; font-size: 0.9rem; color: var(--accent); font-weight: 700;">Total</label>
+              <input type="number" id="nouveau-total" value="0" min="0" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--panel-border); background: var(--button-bg); color: var(--text-color); font-size: 1rem; box-sizing: border-box;">
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <input type="checkbox" id="nouveau-complet" style="width: 18px; height: 18px; cursor: pointer; flex-shrink: 0;">
+              <label for="nouveau-complet" style="font-size: 0.95rem; color: var(--text-color); cursor: pointer;">Séance complète</label>
+            </div>
+          </div>
+          <div style="margin-top: 24px;">
+            <button type="button" id="submit-nouveau" class="btn-resend" style="width: 100%;">Enregistrer l'entrée</button>
+            <div id="nouveau-error" style="margin-top: 10px; color: #ff4d4d; font-size: 0.9rem; display: none;"></div>
+          </div>
+        </div>
+      </div>
+
     <footer class="page-footer">
-      <p>© 2026 Christophe Lambert • Site v1.9.2 • API <span id="api-version">...</span></p>
+      <p>© 2026 Christophe Lambert • Site v1.10.1 • API <span id="api-version">...</span></p>
     </footer>
 
     <script>
@@ -853,13 +927,13 @@
       const setCategory = (key) => {
         const category = categories[key];
         const constructionMsg = document.getElementById('construction-message');
-        const orthoData = document.getElementById('ortho-data-container');
-        const importZone = document.getElementById('import-zone');
+        const orthoDataEl = document.getElementById('ortho-data-container');
         const orthoActions = document.getElementById('category-actions');
+        const orthoHeaderActions = document.getElementById('ortho-header-actions');
 
         accueilPanel.style.display = 'none';
         contentPanel.style.display = 'none';
-        orthoData.style.display = 'none';
+        orthoDataEl.style.display = 'none';
 
         if (key === 'accueil') {
           accueilPanel.style.display = 'flex';
@@ -868,15 +942,19 @@
           titleElement.textContent = category.title;
 
           if (key === 'orthophoniste') {
+            descriptionElement.style.display = 'block';
             descriptionElement.textContent = category.description;
             orthoActions.style.display = 'flex';
-            importZone.style.display = 'block';
+            orthoHeaderActions.style.display = 'flex';
+            if (localStorage.getItem('currentRole') === 'Admin') {
+              document.getElementById('btn-nouveau').style.display = 'block';
+            }
             constructionMsg.style.display = 'none';
           } else {
-            descriptionElement.textContent = 'Section en cours de développement.';
+            descriptionElement.style.display = 'none';
             orthoActions.style.display = 'none';
-            importZone.style.display = 'none';
-            constructionMsg.style.display = 'block';
+            orthoHeaderActions.style.display = 'none';
+            constructionMsg.style.display = 'flex';
           }
         }
       };
@@ -949,7 +1027,9 @@
       };
 
       window.onclick = (event) => {
-        if (event.target == adminModal) adminModal.style.display = 'none';
+        if (event.target === adminModal) adminModal.style.display = 'none';
+        if (event.target === importExportModal) importExportModal.style.display = 'none';
+        if (event.target === nouveauModal) nouveauModal.style.display = 'none';
       };
 
       const loadUsers = async () => {
@@ -1374,8 +1454,27 @@
         renderMotsList();
       });
 
+      // ── Import / Export modal ────────────────────────────────────────────────
+      const importExportModal = document.getElementById('import-export-modal');
+      const closeImportExportModal = document.getElementById('close-import-export-modal');
+      const btnImportExport = document.getElementById('btn-import-export');
       const submitImport = document.getElementById('submit-import');
       const csvArea = document.getElementById('csv-import-area');
+      const btnExportCsv = document.getElementById('btn-export-csv');
+
+      // ── Nouvelle entrée modal (Admin) ────────────────────────────────────────
+      const nouveauModal = document.getElementById('nouveau-modal');
+      const closeNouveauModal = document.getElementById('close-nouveau-modal');
+      const btnNouveau = document.getElementById('btn-nouveau');
+      const submitNouveau = document.getElementById('submit-nouveau');
+
+      btnImportExport.addEventListener('click', () => {
+        importExportModal.style.display = 'block';
+      });
+
+      closeImportExportModal.addEventListener('click', () => {
+        importExportModal.style.display = 'none';
+      });
 
       submitImport.addEventListener('click', async () => {
         const csvContent = csvArea.value.trim();
@@ -1394,6 +1493,7 @@
           alert(result.message || result.error);
           if (response.ok) {
             csvArea.value = '';
+            importExportModal.style.display = 'none';
             document.getElementById('btn-list-j').click();
           }
         } catch (err) {
@@ -1401,6 +1501,84 @@
         } finally {
           submitImport.disabled = false;
           submitImport.textContent = "Lancer l'importation";
+        }
+      });
+
+      btnExportCsv.addEventListener('click', () => {
+        btnExportCsv.disabled = true;
+        btnExportCsv.textContent = 'Export en cours...';
+        apiFetch(`${API_BASE}/api/export-csv`)
+          .then(r => r.blob())
+          .then(blob => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'orthophoniste-export.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+          })
+          .catch(() => alert("Erreur lors de l'export."))
+          .finally(() => {
+            btnExportCsv.disabled = false;
+            btnExportCsv.textContent = 'Télécharger le CSV';
+          });
+      });
+
+      closeNouveauModal.addEventListener('click', () => {
+        nouveauModal.style.display = 'none';
+      });
+
+      btnNouveau.addEventListener('click', () => {
+        document.getElementById('nouveau-date').value = '';
+        document.getElementById('nouveau-mot').value = '';
+        document.getElementById('nouveau-total').value = '0';
+        document.getElementById('nouveau-complet').checked = false;
+        document.getElementById('nouveau-error').style.display = 'none';
+        document.getElementById('nouveau-mot-hint').style.display = 'none';
+        nouveauModal.style.display = 'block';
+      });
+
+      submitNouveau.addEventListener('click', async () => {
+        const date = document.getElementById('nouveau-date').value;
+        const mot = document.getElementById('nouveau-mot').value.trim();
+        const total = parseInt(document.getElementById('nouveau-total').value, 10) || 0;
+        const complet = document.getElementById('nouveau-complet').checked;
+        const errorEl = document.getElementById('nouveau-error');
+
+        if (!date) {
+          errorEl.textContent = 'La date est obligatoire.';
+          errorEl.style.display = 'block';
+          return;
+        }
+
+        submitNouveau.disabled = true;
+        submitNouveau.textContent = 'Enregistrement...';
+        errorEl.style.display = 'none';
+
+        try {
+          const response = await apiFetch(`${API_BASE}/api/orthophoniste`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mot: mot || null, date, total, complet })
+          });
+          const result = await response.json();
+
+          if (!response.ok) {
+            errorEl.textContent = result.error || "Erreur lors de l'enregistrement.";
+            errorEl.style.display = 'block';
+            return;
+          }
+
+          nouveauModal.style.display = 'none';
+          orthoData = [];
+          selectedMot = null;
+          document.getElementById('btn-list-j').click();
+        } catch (err) {
+          errorEl.textContent = 'Erreur réseau.';
+          errorEl.style.display = 'block';
+        } finally {
+          submitNouveau.disabled = false;
+          submitNouveau.textContent = "Enregistrer l'entrée";
         }
       });
 
