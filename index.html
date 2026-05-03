@@ -469,8 +469,8 @@
       const themeToggle = document.getElementById('theme-toggle-container');
       const categoryNav = document.querySelector('.category-nav');
       
-      // Détecter si on est sur Live Server (5500) pour router vers l'API (3000)
-      const API_BASE = window.location.port === '5500' ? 'http://127.0.0.1:3000' : '';
+      // Détecter si on est sur Live Server (5500) pour router vers l'API (3000) sur le même hôte
+      const API_BASE = window.location.port === '5500' ? `http://${window.location.hostname}:3000` : '';
 
       const loadButtonLabels = async () => {
         try {
