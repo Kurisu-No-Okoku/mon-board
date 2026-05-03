@@ -6,7 +6,7 @@ const nodemailer = require('nodemailer');
 const app = express();
 const port = process.env.PORT || 3000;
 const host = '100.99.13.22';
-const apiVersion = '1.3.0';
+const apiVersion = '1.4.0';
 
 const dbConfig = {
   user: process.env.DB_USER,
@@ -70,6 +70,27 @@ transporter.verify((error, success) => {
     console.log('✅ Serveur de mail prêt à envoyer des messages');
   }
 });
+
+// Helper pour l'envoi de l'e-mail de réinitialisation/création de MDP
+async function sendResetEmail(login, email) {
+  const userMailOptions = {
+    from: '"administrateur" <oldvivaldi@gmail.com>',
+    to: email,
+    subject: 'Action requise : Définissez votre mot de passe - Nathanaël',
+    html: `
+      <h3>Bonjour ${login},</h3>
+      <p>Une action est requise sur votre compte pour définir ou réinitialiser votre mot de passe.</p>
+      <p>Veuillez cliquer sur le bouton ci-dessous pour accéder à la page sécurisée :</p>
+      <a href="http://${host}:5500/reset-password.html?login=${encodeURIComponent(login)}" 
+         style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
+         Définir mon mot de passe
+      </a>
+      <p>Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet e-mail.</p>
+      <p>Cordialement,<br>L'équipe de Nathanaël.</p>
+    `
+  };
+  return transporter.sendMail(userMailOptions);
+}
 
 app.get('/api/buttons', async (req, res) => {
   try {
@@ -275,6 +296,62 @@ app.get('/api/confirm-activation', async (req, res) => {
     res.status(500).send('Erreur lors de l\'envoi de l\'e-mail de confirmation à l\'utilisateur.');
   }
 });
+
+// Endpoint pour forcer une demande de réinitialisation (Admin)
+app.post('/api/request-reset', async (req, res) => {
+  const { login } = req.body;
+
+  if (!login) {
+    return res.status(400).json({ error: 'Login requis.' });
+  }
+
+  try {
+    await poolConnect;
+    
+    // 1. Récupération de l'email et vérification existence
+    const result = await pool.request()
+      .input('login', sql.NVarChar, login)
+      .query('SELECT Email FROM Utilisateurs WHERE Username = @login');
+
+    if (result.recordset.length === 0) {
+      return res.status(404).json({ error: 'Utilisateur non trouvé.' });
+    }
+
+    const email = result.recordset[0].Email;
+
+    // 2. Bascule du flag MustResetPassword à 1
+    await pool.request()
+      .input('login', sql.NVarChar, login)
+      .query('UPDATE [dbo].[Utilisateurs] SET MustResetPassword = 1 WHERE Username = @login');
+
+    // 3. Envoi immédiat du mail
+    await sendResetEmail(login, email);
+
+    res.json({ message: `Le flag a été activé et le mail envoyé à ${email}.` });
+  } catch (error) {
+    console.error('Erreur request-reset:', error);
+    res.status(500).json({ error: 'Erreur lors de la demande de réinitialisation.' });
+  }
+});
+
+// Tâche de fond : Vérification toutes les 1 heure (3600000 ms)
+setInterval(async () => {
+  console.log(`[${new Date().toISOString()}] Vérification des relances de mot de passe...`);
+  try {
+    await poolConnect;
+    const result = await pool.request()
+      .query('SELECT Username, Email FROM Utilisateurs WHERE MustResetPassword = 1');
+
+    for (const user of result.recordset) {
+      await sendResetEmail(user.Username, user.Email);
+      console.log(`Relance envoyée à : ${user.Username}`);
+    }
+    
+    console.log(`[${new Date().toISOString()}] Fin de vérification. ${result.recordset.length} mail(s) envoyé(s).`);
+  } catch (err) {
+    console.error('Erreur lors du job de relance automatique:', err);
+  }
+}, 3600000);
 
 // Servir les fichiers statiques
 app.use(express.static(path.join(__dirname)));
