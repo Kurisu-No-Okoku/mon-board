@@ -453,8 +453,27 @@
             <h2 style="margin-bottom: 20px;">📢 Notes de version</h2>
             
             <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 30px;">
-              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.6.3 - Release Notes & Accueil</h3>
+              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.6.6 - Synchronisation des versions & Correctifs</h3>
               <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 3 Mai 2026</p>
+              <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
+                <li><b>Synchronisation :</b> Mise à jour de la version du site pour correspondre à celle de l'API (v1.6.6).</li>
+                <li><b>Fix (API) :</b> Ajout de logs détaillés pour le processus de connexion et de réinitialisation de mot de passe.</li>
+                <li><b>Fix (API) :</b> Vérification de l'existence de l'utilisateur lors de la réinitialisation du mot de passe.</li>
+                <li><b>Robustesse (API) :</b> Ajout d'un `trim()` sur le nom d'utilisateur reçu par l'API pour éviter les problèmes d'espaces.</li>
+                <li><b>Recommandation :</b> Rappel d'une vérification de la taille de la colonne `PasswordHash` en base de données (doit être `NVARCHAR(255)`).</li>
+              </ul>
+            </div>
+
+            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 30px; opacity: 0.8;">
+              <h3 style="margin: 0; color: var(--accent); font-size: 1.1rem;">v1.6.5 - Correctif Reset Password</h3>
+              <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
+                <li><b>Fix :</b> Correction du port dans les liens d'e-mail (passage du port 5500 au port 3000 pour Docker).</li>
+                <li><b>Refactoring :</b> Centralisation de la génération des liens de réinitialisation.</li>
+              </ul>
+            </div>
+
+            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 30px;">
+              <h3 style="margin: 0; color: var(--accent); font-size: 1.1rem;">v1.6.4 - Import CSV & Tables</h3>
               <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
                 <li><b>Accueil :</b> Remplacement de la bannière de construction par un journal des modifications complet.</li>
                 <li><b>Navigation :</b> Redirection systématique vers l'accueil après chaque connexion ou rechargement.</li>
@@ -500,7 +519,7 @@
       </div>
 
     <footer class="page-footer">
-      <p>© 2026 Christophe Lambert • Site v1.6.3 • API <span id="api-version">...</span></p>
+      <p>© 2026 Christophe Lambert • Site v1.6.6 • API <span id="api-version">...</span></p>
     </footer>
 
     <script>

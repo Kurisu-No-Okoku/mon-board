@@ -2,13 +2,15 @@ const path = require('path');
 const express = require('express');
 const sql = require('mssql');
 const nodemailer = require('nodemailer');
+const { Readable } = require('stream');
+const csv = require('csv-parser');
 const bcrypt = require('bcrypt');
 
 const app = express();
 const port = process.env.PORT || 3000;
 const host = '100.99.13.22';
-const apiVersion = '1.6.3';
-
+const apiVersion = '1.6.6'; 
+ 
 const dbConfig = {
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
@@ -73,16 +75,16 @@ transporter.verify((error, success) => {
 });
 
 // Helper pour l'envoi de l'e-mail de réinitialisation/création de MDP
-async function sendResetEmail(login, email) {
+async function sendResetEmail(login, email, customSubject = null) {
   const userMailOptions = {
     from: '"administrateur" <oldvivaldi@gmail.com>',
     to: email,
-    subject: 'Action requise : Définissez votre mot de passe - Nathanaël',
+    subject: customSubject || 'Action requise : Définissez votre mot de passe - Nathanaël',
     html: `
       <h3>Bonjour ${login},</h3>
       <p>Une action est requise sur votre compte pour définir ou réinitialiser votre mot de passe.</p>
       <p>Veuillez cliquer sur le bouton ci-dessous pour accéder à la page sécurisée :</p>
-      <a href="http://${host}:5500/reset-password.html?login=${encodeURIComponent(login)}" 
+      <a href="http://${host}:${port}/reset-password.html?login=${encodeURIComponent(login)}" 
          style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
          Définir mon mot de passe
       </a>
@@ -155,7 +157,7 @@ app.post('/api/login', async (req, res) => {
   try {
     await poolConnect;
     const result = await pool.request()
-      .input('username', sql.NVarChar, username)
+      .input('username', sql.NVarChar, username.trim())
       .query('SELECT UserID, Username, Role, MotDePasseIsActive, PasswordHash FROM Utilisateurs WHERE Username = @username');
 
     if (result.recordset.length > 0) {
@@ -195,14 +197,16 @@ app.post('/api/reset-password', async (req, res) => {
   if (!login || !password) {
     return res.status(400).json({ error: 'Login et mot de passe requis.' });
   }
+  
+  const cleanLogin = login.trim();
 
   try {
     await poolConnect;
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    await pool.request()
-      .input('login', sql.NVarChar, login)
+    const result = await pool.request()
+      .input('login', sql.NVarChar, cleanLogin)
       .input('hash', sql.NVarChar, hashedPassword)
       .query(`
         UPDATE [dbo].[Utilisateurs] 
@@ -210,6 +214,12 @@ app.post('/api/reset-password', async (req, res) => {
         WHERE Username = @login
       `);
 
+    if (result.rowsAffected[0] === 0) {
+      console.error(`[Reset] Échec: Aucun utilisateur trouvé avec le login "${cleanLogin}"`);
+      return res.status(404).json({ error: "Utilisateur non trouvé. Le lien est peut-être expiré ou erroné." });
+    }
+
+    console.log(`[Reset] Mot de passe mis à jour pour: ${cleanLogin}`);
     res.json({ message: 'Mot de passe mis à jour avec succès.' });
   } catch (error) {
     console.error('API /api/reset-password error:', error);
@@ -307,24 +317,8 @@ app.get('/api/confirm-activation', async (req, res) => {
       .input('login', sql.NVarChar, login)
       .query('UPDATE [dbo].[Utilisateurs] SET MustResetPassword = 1 WHERE Username = @login');
 
-    // Préparation de l'e-mail pour l'utilisateur (Lien vers la page de création de MDP)
-    const userMailOptions = {
-      from: '"administrateur" <oldvivaldi@gmail.com>',
-      to: email,
-      subject: 'Activation de votre compte Nathanaël - Création de mot de passe',
-      html: `
-        <h3>Bienvenue ${login} !</h3>
-        <p>Votre demande d'activation a été acceptée par l'administrateur.</p>
-        <p>Veuillez cliquer sur le bouton ci-dessous pour définir votre mot de passe et finaliser votre inscription :</p>
-        <a href="http://${host}:5500/reset-password.html?login=${encodeURIComponent(login)}" 
-           style="background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
-           Créer mon mot de passe
-        </a>
-        <p>Cordialement,<br>L'équipe de Nathanaël.</p>
-      `
-    };
-
-    await transporter.sendMail(userMailOptions);
+    // Envoi du mail via le helper (sujet personnalisé)
+    await sendResetEmail(login, email, 'Activation de votre compte Nathanaël - Création de mot de passe');
 
     // Réponse affichée dans le navigateur de l'admin
     res.send(`
@@ -418,6 +412,78 @@ app.post('/api/request-reset', async (req, res) => {
     console.error('Erreur request-reset:', error);
     res.status(500).json({ error: 'Erreur lors de la demande de réinitialisation.' });
   }
+});
+
+// Nouvel endpoint pour l'importation CSV
+app.post('/api/import-csv', async (req, res) => {
+  const csvString = req.body.csv; // Le contenu CSV est attendu en tant que chaîne dans le corps de la requête
+
+  if (!csvString) {
+    return res.status(400).json({ error: 'Contenu CSV manquant dans le corps de la requête.' });
+  }
+
+  const results = [];
+  const s = new Readable();
+  s._read = () => {}; // Implémentation minimale de _read requise
+  s.push(csvString);
+  s.push(null); // Termine le flux
+
+  s.pipe(csv())
+    .on('data', (data) => results.push(data))
+    .on('end', async () => {
+      try {
+        await poolConnect;
+        const transaction = new sql.Transaction(pool);
+        await transaction.begin();
+
+        try {
+          for (const row of results) {
+            let motId = null;
+            const mot = row.Mot ? row.Mot.trim() : null;
+            const date = row.Date ? new Date(row.Date) : null;
+            const total = row.Total ? parseInt(row.Total, 10) : null;
+
+            if (mot) {
+              // Vérifier si le mot existe déjà
+              let motResult = await transaction.request()
+                .input('mot', sql.NVarChar, mot)
+                .query('SELECT Id FROM Mots WHERE Mot = @mot');
+
+              if (motResult.recordset.length > 0) {
+                motId = motResult.recordset[0].Id;
+              } else {
+                // Insérer le nouveau mot
+                motResult = await transaction.request()
+                  .input('mot', sql.NVarChar, mot)
+                  .query('INSERT INTO Mots (Mot) VALUES (@mot); SELECT SCOPE_IDENTITY() AS Id;');
+                motId = motResult.recordset[0].Id;
+              }
+            }
+
+            // Insérer dans Orthophoniste
+            await transaction.request()
+              .input('motId', sql.Int, motId)
+              .input('date', sql.DateTime2, date)
+              .input('total', sql.Int, total)
+              .query('INSERT INTO Orthophoniste (MotId, Date, Total) VALUES (@motId, @date, @total)');
+          }
+
+          await transaction.commit();
+          res.json({ message: `${results.length} enregistrements CSV importés avec succès.` });
+        } catch (err) {
+          await transaction.rollback();
+          console.error('Erreur lors de l\'importation CSV (transaction):', err);
+          res.status(500).json({ error: 'Erreur lors de l\'importation des données CSV.' });
+        }
+      } catch (error) {
+        console.error('Erreur lors de la connexion à la base de données pour l\'importation CSV:', error);
+        res.status(500).json({ error: 'Erreur de connexion à la base de données.' });
+      }
+    })
+    .on('error', (error) => {
+      console.error('Erreur de parsing CSV:', error);
+      res.status(400).json({ error: 'Erreur lors du parsing du fichier CSV.' });
+    });
 });
 
 // Tâche de fond : Vérification toutes les 1 heure (3600000 ms)
