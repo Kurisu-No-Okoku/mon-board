@@ -6,7 +6,7 @@ const nodemailer = require('nodemailer');
 const app = express();
 const port = process.env.PORT || 3000;
 const host = '100.99.13.22';
-const apiVersion = '1.5.1';
+const apiVersion = '1.6.0';
 
 const dbConfig = {
   user: process.env.DB_USER,
@@ -312,6 +312,32 @@ app.get('/api/users', async (req, res) => {
   } catch (error) {
     console.error('API /api/users error:', error);
     res.status(500).json({ error: 'Impossible de récupérer la liste des utilisateurs.' });
+  }
+});
+
+// Endpoint pour activer/désactiver un utilisateur (Admin)
+app.post('/api/users/toggle-active', async (req, res) => {
+  const { login, isActive } = req.body;
+
+  if (!login || isActive === undefined) {
+    return res.status(400).json({ error: 'Paramètres manquants.' });
+  }
+
+  try {
+    await poolConnect;
+    await pool.request()
+      .input('login', sql.NVarChar, login)
+      .input('isActive', sql.Bit, isActive ? 1 : 0)
+      .query(`
+        UPDATE [dbo].[Utilisateurs] 
+        SET MotDePasseIsActive = @isActive 
+        WHERE Username = @login
+      `);
+
+    res.json({ message: `Statut de ${login} mis à jour : ${isActive ? 'Activé' : 'Désactivé'}.` });
+  } catch (error) {
+    console.error('API /api/users/toggle-active error:', error);
+    res.status(500).json({ error: 'Erreur lors de la mise à jour du statut.' });
   }
 });
 

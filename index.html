@@ -467,7 +467,7 @@
       </div>
 
     <footer class="page-footer">
-      <p>© 2026 Christophe Lambert • Site v1.5.1 • API <span id="api-version">...</span></p>
+      <p>© 2026 Christophe Lambert • Site v1.6.0 • API <span id="api-version">...</span></p>
     </footer>
 
     <script>
@@ -635,10 +635,20 @@
           usersListContainer.innerHTML = users.map(user => `
             <div class="user-item">
               <div>
-                <strong>${user.Username}</strong><br>
-                <small style="color: var(--subtext-color)">${user.Email} • ${user.MustResetPassword ? '⏳ En attente reset' : '✅ Actif'}</small>
+                <strong style="color: ${user.MotDePasseIsActive ? 'inherit' : '#94a2b6'}">${user.Username}</strong><br>
+                <small style="color: var(--subtext-color)">
+                  ${user.Email} • 
+                  <span style="color: ${user.MustResetPassword ? '#fbbf24' : '#10b981'}">
+                    ${user.MustResetPassword ? '⏳ Reset requis' : '✅ Prêt'}
+                  </span>
+                </small>
               </div>
-              <button class="btn-resend" onclick="resendReset('${user.Username}', this)">Relancer</button>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn-resend" onclick="resendReset('${user.Username}', this)" title="Renvoyer le mail de reset">Relancer</button>
+                <button class="btn-resend" style="background-color: ${user.MotDePasseIsActive ? '#dc2626' : '#16a34a'}" onclick="toggleUserActive('${user.Username}', ${!user.MotDePasseIsActive}, this)">
+                  ${user.MotDePasseIsActive ? 'Désactiver' : 'Activer'}
+                </button>
+              </div>
             </div>
           `).join('');
         } catch (err) {
@@ -664,6 +674,28 @@
         } finally {
           btn.disabled = false;
           btn.textContent = originalText;
+        }
+      };
+
+      window.toggleUserActive = async (login, newState, btn) => {
+        const originalText = btn.textContent;
+        try {
+          btn.disabled = true;
+          btn.textContent = '...';
+          const response = await fetch(`${API_BASE}/api/users/toggle-active`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ login, isActive: newState })
+          });
+          
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.error);
+          
+          await loadUsers();
+        } catch (err) {
+          alert("Erreur : " + err.message);
+        } finally {
+          btn.disabled = false;
         }
       };
 
