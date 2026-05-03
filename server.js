@@ -153,8 +153,17 @@ app.post('/api/activate', async (req, res) => {
   }
 
   try {
-    // 1. Insertion en base de données
+    // 1. Vérification si l'utilisateur existe déjà pour éviter une erreur SQL de contrainte unique
     await poolConnect;
+    const checkUser = await pool.request()
+      .input('login', sql.NVarChar, login)
+      .query('SELECT UserID FROM Utilisateurs WHERE Username = @login');
+
+    if (checkUser.recordset.length > 0) {
+      return res.status(409).json({ error: 'Cet identifiant est déjà utilisé ou en attente.' });
+    }
+
+    // 2. Insertion en base de données
     await pool.request()
       .input('login', sql.NVarChar, login)
       .input('email', sql.NVarChar, email)
@@ -167,7 +176,7 @@ app.post('/api/activate', async (req, res) => {
 
     console.log(`Utilisateur ${login} inséré en base (en attente).`);
 
-    // 2. Mail pour l'administrateur
+    // 3. Préparation des e-mails
     const adminMailOptions = {
       from: 'oldvivaldi@gmail.com',
       to: 'oldvivaldi@gmail.com',
@@ -175,7 +184,7 @@ app.post('/api/activate', async (req, res) => {
       text: `Bonjour,\n\nL'utilisateur "${login}" souhaite activer son compte.\nEmail de contact : ${email}\n\nCordialement.`
     };
 
-    // 3. Mail de confirmation pour l'utilisateur
+    // 4. Mail de confirmation pour l'utilisateur
     const userMailOptions = {
       from: 'oldvivaldi@gmail.com',
       to: email,
@@ -183,14 +192,23 @@ app.post('/api/activate', async (req, res) => {
       text: `Bonjour ${login},\n\nVotre demande d'activation a bien été transmise à l'administrateur.\nVous recevrez un e-mail dès que votre compte sera prêt.\n\nCordialement,\nL'équipe de Nathanaël.`
     };
 
-    // Envoi des e-mails
-    await transporter.sendMail(adminMailOptions);
-    await transporter.sendMail(userMailOptions);
+    // 5. Envoi des e-mails avec gestion d'erreur spécifique
+    try {
+      await transporter.sendMail(adminMailOptions);
+      await transporter.sendMail(userMailOptions);
+    } catch (mailError) {
+      console.error('Détails de l\'erreur Nodemailer :', mailError);
+      // Le compte est créé en base, on informe juste que le mail a échoué
+      return res.status(201).json({ 
+        message: 'Compte créé en attente, mais l\'envoi des e-mails de notification a échoué.',
+        warning: 'Vérifiez la configuration SMTP (Mot de passe d\'application Gmail).' 
+      });
+    }
 
     res.json({ message: 'Compte créé en attente et e-mails envoyés.' });
   } catch (error) {
     console.error('Erreur API /api/activate:', error);
-    res.status(500).json({ error: 'Erreur lors de l\'envoi des e-mails.' });
+    res.status(500).json({ error: error.message || 'Erreur lors de l\'activation du compte.' });
   }
 });
 
