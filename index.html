@@ -60,46 +60,61 @@
         position: relative;
       }
 
-      .top-controls {
+      .header-controls {
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        transform: translateY(-50%);
         display: flex;
-        justify-content: space-between;
+        gap: 10px;
         align-items: center;
-        width: 100%;
-        margin-bottom: 20px;
-        gap: 15px;
+        z-index: 10;
       }
 
       .theme-toggle,
       .user-actions {
         display: flex;
         flex-direction: row;
-        gap: 10px;
+        gap: 8px;
         flex-shrink: 0;
-        z-index: 10;
       }
 
       .theme-toggle-button {
         width: 42px;
         min-width: 42px;
         height: 42px;
-        border: 2px solid transparent;
+        border: 2px solid rgba(255, 255, 255, 0.3);
         border-radius: 12px;
-        background-color: rgba(255, 255, 255, 0.12);
+        background-color: rgba(255, 255, 255, 0.18);
         color: var(--text-color);
         cursor: pointer;
         font-size: 1.1rem;
-        transition: transform 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
+        transition: transform 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35), 0 1px 4px rgba(0, 0, 0, 0.2);
       }
 
       .theme-toggle-button:hover {
-        transform: translateY(-1px);
-        background-color: rgba(255, 255, 255, 0.16);
+        transform: translateY(-2px);
+        background-color: rgba(255, 255, 255, 0.26);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4), 0 2px 5px rgba(0, 0, 0, 0.25);
       }
 
       .theme-toggle-button.active {
         background-color: var(--accent);
-        border-color: rgba(255, 255, 255, 0.52);
+        border-color: rgba(255, 255, 255, 0.6);
         color: var(--button-text);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35), 0 1px 4px rgba(0, 0, 0, 0.2);
+      }
+
+      .light-theme .theme-toggle-button {
+        border-color: rgba(0, 0, 0, 0.2);
+        background-color: rgba(255, 255, 255, 0.75);
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18), 0 1px 3px rgba(0, 0, 0, 0.12);
+      }
+
+      .light-theme .theme-toggle-button:hover {
+        background-color: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 5px 14px rgba(0, 0, 0, 0.2), 0 2px 5px rgba(0, 0, 0, 0.14);
       }
 
       .page-wrapper-content {
@@ -458,6 +473,110 @@
 
       .ortho-row.dimmed { opacity: 0.25; }
 
+      /* Barre d'actions Orthophoniste */
+      .ortho-action-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        margin-top: 16px;
+        margin-bottom: 2px;
+      }
+
+      .action-btn {
+        height: 36px;
+        padding: 0 14px;
+        border: 2px solid rgba(255, 255, 255, 0.28);
+        border-radius: 10px;
+        background-color: var(--button-bg);
+        color: var(--text-color);
+        cursor: pointer;
+        font-size: 0.88rem;
+        font-weight: 600;
+        transition: transform 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
+        white-space: nowrap;
+      }
+
+      .action-btn:hover {
+        background-color: var(--btn-hover);
+        transform: translateY(-1px);
+        border-color: rgba(255, 255, 255, 0.45);
+      }
+
+      .light-theme .action-btn {
+        border-color: rgba(0, 0, 0, 0.2);
+      }
+
+      .light-theme .action-btn:hover {
+        border-color: rgba(0, 0, 0, 0.35);
+      }
+
+      /* Volets déroulants de section (Exercices, tableau) */
+      .section-drawer {
+        border: none;
+        padding: 0;
+        margin: 0;
+        margin-top: 16px;
+      }
+
+      .section-drawer > summary {
+        list-style: none;
+        cursor: pointer;
+        user-select: none;
+        padding: 12px 18px;
+        background-color: var(--button-bg);
+        border: 2px solid rgba(255, 255, 255, 0.25);
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: var(--accent);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: background-color 0.15s ease, border-color 0.15s ease;
+      }
+
+      .light-theme .section-drawer > summary {
+        border-color: rgba(0, 0, 0, 0.18);
+      }
+
+      .section-drawer > summary::-webkit-details-marker { display: none; }
+
+      .section-drawer > summary:hover {
+        background-color: var(--btn-hover);
+        border-color: rgba(255, 255, 255, 0.4);
+      }
+
+      .light-theme .section-drawer > summary:hover {
+        border-color: rgba(0, 0, 0, 0.3);
+      }
+
+      .section-drawer > summary::before {
+        content: '▶';
+        font-size: 0.65em;
+        transition: transform 0.2s ease;
+        flex-shrink: 0;
+      }
+
+      .section-drawer[open] > summary::before {
+        transform: rotate(90deg);
+      }
+
+      .section-drawer-content {
+        margin-top: 10px;
+        padding: 14px;
+        background-color: var(--panel-bg);
+        border: 1px solid var(--panel-border);
+        border-radius: 12px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .section-drawer-body {
+        margin-top: 10px;
+      }
+
       /* Release notes accordion */
       .release-drawer,
       .release-collapse {
@@ -577,8 +696,21 @@
           gap: 0;
         }
 
-        .top-controls {
-          margin-bottom: 15px;
+        .header-controls {
+          right: 8px;
+          gap: 6px;
+        }
+
+        .theme-toggle,
+        .user-actions {
+          gap: 6px;
+        }
+
+        .theme-toggle-button {
+          width: 36px;
+          min-width: 36px;
+          height: 36px;
+          font-size: 0.95rem;
         }
 
         .category-nav {
@@ -622,21 +754,20 @@
   </head>
   <body>
     <div class="page-wrapper">
-      <div class="top-controls">
-        <div class="theme-toggle" id="theme-toggle-container" aria-label="Toggle thème clair ou sombre" style="display: none;">
-          <button type="button" class="theme-toggle-button active" data-theme="dark" aria-label="Thème sombre">🌙</button>
-          <button type="button" class="theme-toggle-button" data-theme="light" aria-label="Thème clair">☀️</button>
-        </div>
-        <div class="user-actions" id="user-actions" style="display: none;">
-          <button type="button" id="account-button" class="theme-toggle-button" aria-label="Mon compte">👤</button>
-          <button type="button" id="logout-button" class="theme-toggle-button" aria-label="Se déconnecter" style="background-color: rgba(255, 77, 77, 0.15); border-color: rgba(255, 77, 77, 0.3);">🚪</button>
-        </div>
-      </div>
-
       <div class="page-wrapper-content">
         <header class="page-header">
           <h1>Board de Nathanaël</h1>
           <p id="welcome-message" style="display: none;"></p>
+          <div class="header-controls">
+            <div class="theme-toggle" id="theme-toggle-container" aria-label="Toggle thème clair ou sombre" style="display: none;">
+              <button type="button" class="theme-toggle-button active" data-theme="dark" aria-label="Thème sombre">🌙</button>
+              <button type="button" class="theme-toggle-button" data-theme="light" aria-label="Thème clair">☀️</button>
+            </div>
+            <div class="user-actions" id="user-actions" style="display: none;">
+              <button type="button" id="account-button" class="theme-toggle-button" aria-label="Mon compte">👤</button>
+              <button type="button" id="logout-button" class="theme-toggle-button" aria-label="Se déconnecter" style="background-color: rgba(255, 77, 77, 0.2); border-color: rgba(255, 77, 77, 0.45);">🚪</button>
+            </div>
+          </div>
         </header>
 
       <!-- Section Login -->
@@ -689,18 +820,31 @@
 
             <!-- Dernière release — toujours visible -->
             <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 24px;">
-              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.11.0 - Accordéon releases &amp; Fix alignement mots</h3>
+              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.12.0 - Refonte UI : Header flottant &amp; Orthophoniste restructuré</h3>
               <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 4 Mai 2026</p>
               <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
-                <li><b>UX (Accueil) :</b> Page d'accueil restructurée — seule la dernière release est visible par défaut, les versions précédentes sont regroupées dans un tiroir accordéon repliable ; chaque release s'ouvre individuellement au clic.</li>
-                <li><b>Fix (UI) :</b> Alignement correct de la colonne "Liste de mots" avec le tableau principal — correction du <code>display: flex</code> au lieu de <code>block</code> lors du toggle.</li>
+                <li><b>UI (Header) :</b> Les icônes thème, compte et déconnexion sont intégrées dans le header avec un effet de survol flottant (ombre portée).</li>
+                <li><b>UX (Orthophoniste) :</b> Section restructurée — volet déroulant "Exercices" regroupant les exercices disponibles ; "Liste de mots en J" est maintenant dans ce volet.</li>
+                <li><b>UX (Orthophoniste) :</b> Tableau et boutons (Import/Export, Nouvelle entrée, Liste de mots) n'apparaissent qu'après avoir choisi un exercice.</li>
+                <li><b>UX (Orthophoniste) :</b> Le tableau principal est lui-même un volet déroulant affichant le nombre d'entrées chargées.</li>
+                <li><b>UI :</b> Meilleure lisibilité des boutons en thème sombre — bordures et fonds plus contrastés.</li>
               </ul>
             </div>
 
             <!-- Versions précédentes — tiroir fermé par défaut -->
             <details class="release-drawer">
-              <summary>Versions précédentes (15)</summary>
+              <summary>Versions précédentes (16)</summary>
               <div class="release-drawer-content">
+
+                <details class="release-collapse">
+                  <summary><span class="release-collapse-title">v1.11.0 - Accordéon releases &amp; Fix alignement mots</span><span class="release-collapse-date">4 Mai 2026</span></summary>
+                  <div class="release-collapse-body">
+                    <ul>
+                      <li><b>UX (Accueil) :</b> Page d'accueil restructurée — seule la dernière release est visible par défaut, les versions précédentes sont regroupées dans un tiroir accordéon repliable ; chaque release s'ouvre individuellement au clic.</li>
+                      <li><b>Fix (UI) :</b> Alignement correct de la colonne "Liste de mots" avec le tableau principal.</li>
+                    </ul>
+                  </div>
+                </details>
 
                 <details class="release-collapse">
                   <summary><span class="release-collapse-title">v1.10.1 - Correctifs UI double tableau</span><span class="release-collapse-date">3 Mai 2026</span></summary>
@@ -867,31 +1011,40 @@
         </div>
 
         <div id="content-panel">
-          <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px;">
-            <h2 id="category-title" style="margin: 0;">Orthophoniste</h2>
-            <div id="ortho-header-actions" style="display: none; align-items: center; gap: 8px; flex-shrink: 0;">
-              <button type="button" id="btn-import-export" class="theme-toggle-button" title="Importer / Exporter" aria-label="Importer ou Exporter des données">↕</button>
-              <button type="button" id="btn-nouveau" class="theme-toggle-button" title="Nouvelle entrée" aria-label="Ajouter une nouvelle entrée" style="display: none; background-color: rgba(40, 167, 69, 0.18); border-color: rgba(40, 167, 69, 0.45);">➕</button>
+          <h2 id="category-title" style="margin: 0 0 8px;">Orthophoniste</h2>
+          <p id="category-description">Choisissez une option pour l'orthophoniste.</p>
+
+          <!-- Volet déroulant Exercices -->
+          <details class="section-drawer" id="exercices-drawer" open style="display: none;">
+            <summary>Exercices</summary>
+            <div class="section-drawer-content">
+              <button type="button" id="btn-list-j" class="action-btn">📝 Liste de mots en "J"</button>
             </div>
-          </div>
-          <p id="category-description">Choisissez une option pour l'orthophoniste. Ces actions restent disponibles sans changer de page.</p>
+          </details>
 
-          <div id="category-actions" class="actions-row" style="display: none;">
-            <button type="button" id="btn-list-j" class="category-button" style="width: auto; min-width: 280px;">Liste de mots en "J"</button>
-            <button type="button" id="btn-list-mots" class="category-button" style="width: auto; min-width: 180px; display: none;">📋 Liste de mots</button>
-          </div>
-
+          <!-- Zone tableau + actions (visible après chargement) -->
           <div id="ortho-data-container" style="display: none;">
-            <div id="ortho-tables-row">
-              <div id="mots-col" style="display: none;">
-                <div id="mots-table-content"></div>
-              </div>
-              <div id="ortho-col">
-                <div id="ortho-table-content"></div>
-              </div>
+            <div class="ortho-action-bar">
+              <button type="button" id="btn-import-export" class="action-btn" title="Importer / Exporter" aria-label="Importer ou Exporter des données">↕ Import/Export</button>
+              <button type="button" id="btn-nouveau" class="action-btn" title="Nouvelle entrée" aria-label="Ajouter une nouvelle entrée" style="display: none; background-color: rgba(40, 167, 69, 0.18); border-color: rgba(40, 167, 69, 0.45);">➕ Nouvelle entrée</button>
+              <button type="button" id="btn-list-mots" class="action-btn" style="display: none;">📋 Liste de mots</button>
             </div>
-          </div>
 
+            <!-- Volet déroulant du tableau principal -->
+            <details class="section-drawer" id="ortho-table-drawer" open>
+              <summary id="ortho-table-summary">Données orthophoniste</summary>
+              <div class="section-drawer-body">
+                <div id="ortho-tables-row">
+                  <div id="mots-col" style="display: none;">
+                    <div id="mots-table-content"></div>
+                  </div>
+                  <div id="ortho-col">
+                    <div id="ortho-table-content"></div>
+                  </div>
+                </div>
+              </div>
+            </details>
+          </div>
 
           <!-- FIX: élément manquant, causait un TypeError dans setCategory() -->
           <div id="construction-message" style="display: none;" class="construction-panel">
@@ -967,7 +1120,7 @@
       </div>
 
     <footer class="page-footer">
-      <p>© 2026 Christophe Lambert • Site v1.11.0 • API <span id="api-version">...</span></p>
+      <p>© 2026 Christophe Lambert • Site v1.12.0 • API <span id="api-version">...</span></p>
     </footer>
 
     <script>
@@ -1019,7 +1172,6 @@
 
       const titleElement = document.getElementById('category-title');
       const descriptionElement = document.getElementById('category-description');
-      const actionsElement = document.getElementById('category-actions');
       const buttons = document.querySelectorAll('.category-button, .home-button');
       const defaultCategory = 'accueil';
       const themeButtons = document.querySelectorAll('.theme-toggle-button');
@@ -1081,8 +1233,7 @@
         const category = categories[key];
         const constructionMsg = document.getElementById('construction-message');
         const orthoDataEl = document.getElementById('ortho-data-container');
-        const orthoActions = document.getElementById('category-actions');
-        const orthoHeaderActions = document.getElementById('ortho-header-actions');
+        const exercicesDrawer = document.getElementById('exercices-drawer');
 
         accueilPanel.style.display = 'none';
         contentPanel.style.display = 'none';
@@ -1097,16 +1248,11 @@
           if (key === 'orthophoniste') {
             descriptionElement.style.display = 'block';
             descriptionElement.textContent = category.description;
-            orthoActions.style.display = 'flex';
-            orthoHeaderActions.style.display = 'flex';
-            if (localStorage.getItem('currentRole') === 'Admin') {
-              document.getElementById('btn-nouveau').style.display = 'block';
-            }
+            exercicesDrawer.style.display = 'block';
             constructionMsg.style.display = 'none';
           } else {
             descriptionElement.style.display = 'none';
-            orthoActions.style.display = 'none';
-            orthoHeaderActions.style.display = 'none';
+            exercicesDrawer.style.display = 'none';
             constructionMsg.style.display = 'flex';
           }
         }
@@ -1563,6 +1709,10 @@
       // Bouton "Liste de mots en J"
       document.getElementById('btn-list-j').addEventListener('click', async () => {
         orthoContainer.style.display = 'block';
+        const tableDrawer = document.getElementById('ortho-table-drawer');
+        const tableSummary = document.getElementById('ortho-table-summary');
+        if (tableDrawer) tableDrawer.open = true;
+        if (tableSummary) tableSummary.textContent = 'Données orthophoniste (chargement…)';
         orthoTableContent.innerHTML = '<p style="text-align:center; margin-top:20px; color:var(--subtext-color);">Chargement...</p>';
         selectedMot = null;
 
@@ -1571,11 +1721,16 @@
           if (!response.ok) throw new Error(`Erreur ${response.status}`);
           orthoData = await response.json();
           renderOrthoTable();
+          if (tableSummary) tableSummary.textContent = `Données orthophoniste (${orthoData.length} entrée${orthoData.length !== 1 ? 's' : ''})`;
           // Raffraîchir la liste si elle est déjà ouverte
           if (motsCol.style.display !== 'none') renderMotsList();
           btnListMots.style.display = 'block';
+          if (localStorage.getItem('currentRole') === 'Admin') {
+            document.getElementById('btn-nouveau').style.display = 'block';
+          }
         } catch (err) {
           orthoTableContent.innerHTML = '<p style="color:#ff4d4d; text-align:center;">Erreur lors du chargement.</p>';
+          if (tableSummary) tableSummary.textContent = 'Données orthophoniste (erreur)';
         }
       });
 
@@ -1590,7 +1745,7 @@
         }
 
         motsCol.style.display = 'flex';
-        btnListMots.textContent = '✕ Masquer les mots';
+        btnListMots.textContent = '✕ Masquer liste';
 
         if (motsData.length === 0) {
           motsTableContent.innerHTML = '<p style="text-align:center; color:var(--subtext-color);">Chargement...</p>';
