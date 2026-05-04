@@ -513,7 +513,8 @@
       .month-drawer .data-table { border-radius: 0; margin: 0; }
 
       /* Tableau unique orthophoniste avec en-tête global partagé */
-      .ortho-single-table { border-collapse: collapse; width: 100%; }
+      /* overflow:visible annule overflow:hidden de .data-table pour que position:sticky fonctionne par rapport au viewport */
+      .ortho-single-table { border-collapse: collapse; width: 100%; overflow: visible; }
 
       .ortho-single-table thead th {
         position: sticky;
