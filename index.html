@@ -1104,22 +1104,32 @@
               </ul>
             </div>
 
-            <!-- v1.22.0 -->
+            <!-- v1.22.1 -->
             <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 24px;">
-              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.22.0 - UX Orthophoniste : tableau unifié, barre sticky &amp; export Excel/PDF</h3>
+              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.22.1 - Fix Orthophoniste : mois fermés par défaut &amp; en-tête sticky corrigé</h3>
               <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 4 Mai 2026</p>
               <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
-                <li><b>UX (Orthophoniste) :</b> L'en-tête de colonnes (Date / Mots / Progression) n'apparaît plus qu'une seule fois, en haut du tableau global — plus de répétition pour chaque tiroir mensuel. Les mois restent repliables/dépliables avec mémorisation de l'état.</li>
-                <li><b>UX (Orthophoniste) :</b> La barre d'actions (Import/Export, Nouvelle entrée, Liste de mots) est désormais <em>sticky</em> : elle se fige en haut de la page lors du scroll. Le contenu défile derrière elle.</li>
-                <li><b>UX (Orthophoniste) :</b> Effet <em>frosted glass</em> sur la barre sticky au scroll — les boutons sont légèrement floutés, reprennent leur clarté au survol.</li>
-                <li><b>Export :</b> Le CSV est remplacé par deux formats : <b>Excel (.xlsx)</b> via SheetJS (colonnes correctement dimensionnées) et <b>PDF</b> via jsPDF + AutoTable (tableau mis en page, couleurs de la charte).</li>
+                <li><b>Fix (Orthophoniste) :</b> Tous les mois sont désormais fermés par défaut — aucun mois ne s'ouvre automatiquement au chargement.</li>
+                <li><b>Fix (Orthophoniste) :</b> L'en-tête de colonnes sticky (Date / Mots / Progression) se recale dynamiquement sous la barre d'actions — plus de lignes visibles au-dessus de l'en-tête lors du scroll.</li>
               </ul>
             </div>
 
             <!-- Versions précédentes — tiroir fermé par défaut -->
             <details class="release-drawer">
-              <summary>Versions précédentes (29)</summary>
+              <summary>Versions précédentes (30)</summary>
               <div class="release-drawer-content">
+
+                <details class="release-collapse">
+                  <summary><span class="release-collapse-title">v1.22.0 - UX Orthophoniste : tableau unifié, barre sticky &amp; export Excel/PDF</span><span class="release-collapse-date">4 Mai 2026</span></summary>
+                  <div class="release-collapse-body">
+                    <ul>
+                      <li><b>UX (Orthophoniste) :</b> L'en-tête de colonnes (Date / Mots / Progression) n'apparaît plus qu'une seule fois, en haut du tableau global — plus de répétition pour chaque tiroir mensuel. Les mois restent repliables/dépliables avec mémorisation de l'état.</li>
+                      <li><b>UX (Orthophoniste) :</b> La barre d'actions (Import/Export, Nouvelle entrée, Liste de mots) est désormais <em>sticky</em> : elle se fige en haut de la page lors du scroll. Le contenu défile derrière elle.</li>
+                      <li><b>UX (Orthophoniste) :</b> Effet <em>frosted glass</em> sur la barre sticky au scroll — les boutons sont légèrement floutés, reprennent leur clarté au survol.</li>
+                      <li><b>Export :</b> Le CSV est remplacé par deux formats : <b>Excel (.xlsx)</b> via SheetJS (colonnes correctement dimensionnées) et <b>PDF</b> via jsPDF + AutoTable (tableau mis en page, couleurs de la charte).</li>
+                    </ul>
+                  </div>
+                </details>
 
                 <details class="release-collapse">
                   <summary><span class="release-collapse-title">v1.21.0 - Thème sur la page login &amp; fix bouton Compte</span><span class="release-collapse-date">4 Mai 2026</span></summary>
