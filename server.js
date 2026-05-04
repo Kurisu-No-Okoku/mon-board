@@ -8,7 +8,7 @@ const bcrypt = require('bcrypt');
 const app = express();
 const port = process.env.PORT || 3000;
 const publicHost = process.env.PUBLIC_URL || `http://100.99.13.22:${port}`;
-const apiVersion = '1.15.0';
+const apiVersion = '1.18.0';
 
 // FIX: suppression de la référence à `host` qui n'était pas défini (ReferenceError)
 const dbConfig = {
@@ -524,30 +524,27 @@ app.post('/api/import-csv', adminMiddleware, async (req, res) => {
 
     try {
       for (const row of processedRows) {
-        let motId = null;
         const words = row.wordsString
           .split(',')
           .map(w => w.trim())
           .filter(w => w.length > 0);
 
-        if (words.length > 0) {
-          for (const word of words) {
-            if (!wordCache.has(word)) {
-              let motResult = await transaction.request()
-                .input('mot', sql.NVarChar, word)
-                .query('SELECT Id FROM Mots WHERE Mot = @mot');
+        // Résoudre les mots et les mettre en cache
+        for (const word of words) {
+          if (!wordCache.has(word)) {
+            let motResult = await transaction.request()
+              .input('mot', sql.NVarChar, word)
+              .query('SELECT Id FROM Mots WHERE Mot = @mot');
 
-              if (motResult.recordset.length > 0) {
-                wordCache.set(word, motResult.recordset[0].Id);
-              } else {
-                motResult = await transaction.request()
-                  .input('mot', sql.NVarChar, word)
-                  .query('INSERT INTO Mots (Mot) VALUES (@mot); SELECT SCOPE_IDENTITY() AS Id;');
-                wordCache.set(word, motResult.recordset[0].Id);
-              }
+            if (motResult.recordset.length > 0) {
+              wordCache.set(word, motResult.recordset[0].Id);
+            } else {
+              motResult = await transaction.request()
+                .input('mot', sql.NVarChar, word)
+                .query('INSERT INTO Mots (Mot) VALUES (@mot); SELECT SCOPE_IDENTITY() AS Id;');
+              wordCache.set(word, motResult.recordset[0].Id);
             }
           }
-          motId = words.length === 1 ? wordCache.get(words[0]) : null;
         }
 
         const dateParts = row.dateString.trim().split(/\s+/);
@@ -560,11 +557,20 @@ app.post('/api/import-csv', adminMiddleware, async (req, res) => {
 
         const total = isNaN(parseInt(row.totalWordsRaw, 10)) ? null : parseInt(row.totalWordsRaw, 10);
 
-        await transaction.request()
-          .input('motId', sql.Int, motId)
+        // Insérer la séance et récupérer son Id (Total et Complet calculés à la lecture)
+        const orthoResult = await transaction.request()
           .input('date', sql.DateTime2, date)
-          .input('total', sql.Int, total)
-          .query('INSERT INTO Orthophoniste (MotId, Date, Total) VALUES (@motId, @date, @total)');
+          .query('INSERT INTO Orthophoniste (Date) VALUES (@date); SELECT SCOPE_IDENTITY() AS Id;');
+
+        const orthoId = orthoResult.recordset[0].Id;
+
+        // Associer chaque mot via la table de liaison
+        for (const word of words) {
+          await transaction.request()
+            .input('orthoId', sql.Int, orthoId)
+            .input('motId', sql.Int, wordCache.get(word))
+            .query('INSERT INTO Orthophoniste_Mots (OrthophonisteId, MotId) VALUES (@orthoId, @motId)');
+        }
       }
 
       await transaction.commit();
@@ -585,15 +591,22 @@ app.get('/api/orthophoniste', authMiddleware, async (req, res) => {
   try {
     await poolConnect;
     const result = await pool.request().query(`
+      WITH WordData AS (
+        SELECT OM.OrthophonisteId,
+          COUNT(OM.MotId) AS MotCount,
+          STRING_AGG(M.Mot, ', ') WITHIN GROUP (ORDER BY M.Mot) AS Mots
+        FROM Orthophoniste_Mots OM
+        JOIN Mots M ON OM.MotId = M.Id
+        GROUP BY OM.OrthophonisteId
+      )
       SELECT
         O.Id,
         O.Date,
-        O.Total,
-        O.Complet,
-        O.Incomplet,
-        M.Mot
+        ISNULL(WD.MotCount, 0) AS Total,
+        CASE WHEN ISNULL(WD.MotCount, 0) >= 10 THEN 1 ELSE 0 END AS Complet,
+        ISNULL(WD.Mots, '') AS Mots
       FROM Orthophoniste O
-      LEFT JOIN Mots M ON O.MotId = M.Id
+      LEFT JOIN WordData WD ON O.Id = WD.OrthophonisteId
       ORDER BY O.Date DESC
     `);
     res.json(result.recordset);
@@ -621,7 +634,7 @@ app.get('/api/mots', authMiddleware, async (req, res) => {
 
 // Protégé admin — ajout manuel d'une entrée orthophoniste
 app.post('/api/orthophoniste', adminMiddleware, async (req, res) => {
-  const { mot, date, total, complet } = req.body;
+  const { mot, date } = req.body;
 
   if (!date) {
     return res.status(400).json({ error: 'La date est requise.' });
@@ -629,32 +642,44 @@ app.post('/api/orthophoniste', adminMiddleware, async (req, res) => {
 
   try {
     await poolConnect;
-    let motId = null;
+    const transaction = new sql.Transaction(pool);
+    await transaction.begin();
 
-    if (mot && mot.trim()) {
-      const cleanMot = mot.trim();
-      const motResult = await pool.request()
-        .input('mot', sql.NVarChar, cleanMot)
-        .query('SELECT Id FROM Mots WHERE Mot = @mot');
+    try {
+      const orthoResult = await transaction.request()
+        .input('date', sql.DateTime2, new Date(date))
+        .query('INSERT INTO Orthophoniste (Date) VALUES (@date); SELECT SCOPE_IDENTITY() AS Id;');
 
-      if (motResult.recordset.length > 0) {
-        motId = motResult.recordset[0].Id;
-      } else {
-        const insertResult = await pool.request()
+      const orthoId = orthoResult.recordset[0].Id;
+
+      if (mot && mot.trim()) {
+        const cleanMot = mot.trim();
+        const motResult = await transaction.request()
           .input('mot', sql.NVarChar, cleanMot)
-          .query('INSERT INTO Mots (Mot) VALUES (@mot); SELECT SCOPE_IDENTITY() AS Id;');
-        motId = insertResult.recordset[0].Id;
+          .query('SELECT Id FROM Mots WHERE Mot = @mot');
+
+        let motId;
+        if (motResult.recordset.length > 0) {
+          motId = motResult.recordset[0].Id;
+        } else {
+          const insertMotResult = await transaction.request()
+            .input('mot', sql.NVarChar, cleanMot)
+            .query('INSERT INTO Mots (Mot) VALUES (@mot); SELECT SCOPE_IDENTITY() AS Id;');
+          motId = insertMotResult.recordset[0].Id;
+        }
+
+        await transaction.request()
+          .input('orthoId', sql.Int, orthoId)
+          .input('motId', sql.Int, motId)
+          .query('INSERT INTO Orthophoniste_Mots (OrthophonisteId, MotId) VALUES (@orthoId, @motId)');
       }
+
+      await transaction.commit();
+      res.json({ message: 'Entrée ajoutée avec succès.' });
+    } catch (err) {
+      await transaction.rollback();
+      throw err;
     }
-
-    await pool.request()
-      .input('motId', sql.Int, motId)
-      .input('date', sql.DateTime2, new Date(date))
-      .input('total', sql.Int, total !== undefined && total !== null ? parseInt(total, 10) : 0)
-      .input('complet', sql.Bit, complet ? 1 : 0)
-      .query('INSERT INTO Orthophoniste (MotId, Date, Total, Complet) VALUES (@motId, @date, @total, @complet)');
-
-    res.json({ message: 'Entrée ajoutée avec succès.' });
   } catch (error) {
     console.error('API POST /api/orthophoniste error:', error);
     res.status(500).json({ error: "Erreur lors de l'insertion." });
@@ -666,13 +691,21 @@ app.get('/api/export-csv', authMiddleware, async (req, res) => {
   try {
     await poolConnect;
     const result = await pool.request().query(`
+      WITH WordData AS (
+        SELECT OM.OrthophonisteId,
+          COUNT(OM.MotId) AS MotCount,
+          STRING_AGG(M.Mot, ', ') WITHIN GROUP (ORDER BY M.Mot) AS Mots
+        FROM Orthophoniste_Mots OM
+        JOIN Mots M ON OM.MotId = M.Id
+        GROUP BY OM.OrthophonisteId
+      )
       SELECT
         CONVERT(VARCHAR(10), O.Date, 120) AS Date,
-        ISNULL(M.Mot, '') AS Mot,
-        ISNULL(O.Total, 0) AS Total,
-        CASE WHEN O.Complet = 1 THEN 'Oui' ELSE 'Non' END AS Complet
+        ISNULL(WD.Mots, '') AS Mots,
+        ISNULL(WD.MotCount, 0) AS Total,
+        CASE WHEN ISNULL(WD.MotCount, 0) >= 10 THEN 'Oui' ELSE 'Non' END AS Complet
       FROM Orthophoniste O
-      LEFT JOIN Mots M ON O.MotId = M.Id
+      LEFT JOIN WordData WD ON O.Id = WD.OrthophonisteId
       ORDER BY O.Date DESC
     `);
 

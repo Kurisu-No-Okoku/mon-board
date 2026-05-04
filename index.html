@@ -11,18 +11,18 @@
 
       :root {
         color-scheme: dark;
-        --bg-color: #12141a;
+        --bg-color: #252e42;
         --text-color: #eef1f6;
         --subtext-color: #c9d4e1;
-        --panel-bg: rgba(255, 255, 255, 0.04);
-        --panel-border: rgba(255, 255, 255, 0.08);
+        --panel-bg: rgba(255, 255, 255, 0.06);
+        --panel-border: rgba(255, 255, 255, 0.1);
         --panel-heading-color: #f7fbff;
         --panel-text-color: #d7dde6;
-        --header-start: #3f5165;
-        --header-end: #354458;
-        --button-bg: #273343;
+        --header-start: #445a72;
+        --header-end: #38506a;
+        --button-bg: #2d3f55;
         --button-text: #eef1f6;
-        --btn-hover: #3a516d;
+        --btn-hover: #3d5470;
         --accent: #8aa5c3;
       }
 
@@ -363,15 +363,38 @@
         color: var(--accent);
         font-weight: 700;
       }
-      .status-badge {
-        padding: 4px 8px;
-        border-radius: 6px;
-        font-size: 0.85rem;
-        font-weight: bold;
-        display: inline-block;
+      /* Barre de progression Total/10 */
+      .progress-track {
+        position: relative;
+        height: 24px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        overflow: hidden;
+        min-width: 80px;
       }
-      .status-complet { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-      .status-incomplet { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+
+      .progress-fill {
+        position: absolute;
+        top: 0; left: 0;
+        height: 100%;
+        background: rgba(138, 165, 195, 0.55);
+        border-radius: 12px;
+        transition: width 0.3s ease;
+      }
+
+      .progress-fill.done { background: rgba(34, 197, 94, 0.6); }
+
+      .progress-label {
+        position: absolute;
+        width: 100%;
+        text-align: center;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--text-color);
+        pointer-events: none;
+      }
 
       @keyframes fadeIn {
         from { opacity: 0; transform: translateY(4px); }
@@ -987,19 +1010,53 @@
 
             <!-- Dernière release — toujours visible -->
             <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 24px;">
-              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.15.0 - UX Orthophoniste : tiroirs par mois &amp; boutons flottants universels</h3>
+              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.18.0 - Fix transaction insertion &amp; thème sombre éclairci</h3>
               <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 4 Mai 2026</p>
               <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
-                <li><b>UX (Orthophoniste) :</b> Le tableau principal est maintenant découpé en volets mensuels repliables — seul le mois le plus récent est ouvert par défaut ; les mois précédents sont fermés pour plus de lisibilité.</li>
-                <li><b>Fix (Orthophoniste) :</b> La liste de mots (colonne de droite) s'aligne désormais correctement avec le haut du tableau principal — colonne sticky pendant le scroll.</li>
-                <li><b>UI :</b> Les boutons "Accueil" et de catégorie (Orthophoniste, Sessad, ULIS, Maison) bénéficient du même effet flottant que les boutons du header (ombre portée + <code>translateY</code> au survol).</li>
+                <li><b>Fix (API) :</b> L'ajout manuel d'une entrée (<code>POST /api/orthophoniste</code>) est maintenant enveloppé dans une transaction — plus de gaps d'IDENTITY si une étape échoue.</li>
+                <li><b>UI :</b> Fond sombre adouci — <code>#252e42</code> au lieu de <code>#1c2030</code>, plus agréable à l'œil tout en restant un thème sombre.</li>
               </ul>
             </div>
 
             <!-- Versions précédentes — tiroir fermé par défaut -->
             <details class="release-drawer">
-              <summary>Versions précédentes (21)</summary>
+              <summary>Versions précédentes (24)</summary>
               <div class="release-drawer-content">
+
+                <details class="release-collapse">
+                  <summary><span class="release-collapse-title">v1.17.0 - Barre de progression, mots séparés par virgule &amp; simplification BDD</span><span class="release-collapse-date">4 Mai 2026</span></summary>
+                  <div class="release-collapse-body">
+                    <ul>
+                      <li><b>UI :</b> Remplacement des colonnes "Total" et "Complet" par une barre de progression (x/10) — verte quand la séance atteint 10 mots.</li>
+                      <li><b>BDD :</b> Suppression de la colonne <code>Incomplet</code> ; <code>Total</code> et <code>Complet</code> calculés à la lecture via <code>COUNT(MotId)</code>.</li>
+                      <li><b>API :</b> Les mots d'une séance sont agrégés en une chaîne séparée par des virgules via <code>STRING_AGG</code> et affichés dans la colonne "Mots".</li>
+                      <li><b>UX :</b> Modal de nouvelle entrée simplifié — champs "Total" et "Complet" supprimés.</li>
+                    </ul>
+                  </div>
+                </details>
+
+                <details class="release-collapse">
+                  <summary><span class="release-collapse-title">v1.16.0 - Refonte BDD &amp; thème sombre adouci</span><span class="release-collapse-date">4 Mai 2026</span></summary>
+                  <div class="release-collapse-body">
+                    <ul>
+                      <li><b>BDD :</b> Migration vers une relation many-to-many — <code>MotId</code> supprimé de <code>Orthophoniste</code>, nouvelle table de liaison <code>Orthophoniste_Mots</code> (OrthophonisteId, MotId).</li>
+                      <li><b>API :</b> Toutes les routes orthophoniste réécrites pour la nouvelle structure : <code>GET /api/orthophoniste</code>, <code>POST /api/orthophoniste</code>, <code>POST /api/import-csv</code>, <code>GET /api/export-csv</code>.</li>
+                      <li><b>Fix :</b> Insertion d'une nouvelle entrée (bouton ➕) fonctionnelle — insère dans <code>Orthophoniste</code> puis associe le mot via <code>Orthophoniste_Mots</code>.</li>
+                      <li><b>UI :</b> Fond sombre adouci — <code>#1c2030</code> au lieu du noir quasi-total <code>#12141a</code>.</li>
+                    </ul>
+                  </div>
+                </details>
+
+                <details class="release-collapse">
+                  <summary><span class="release-collapse-title">v1.15.0 - UX Orthophoniste : tiroirs par mois &amp; boutons flottants universels</span><span class="release-collapse-date">4 Mai 2026</span></summary>
+                  <div class="release-collapse-body">
+                    <ul>
+                      <li><b>UX (Orthophoniste) :</b> Le tableau principal est maintenant découpé en volets mensuels repliables — seul le mois le plus récent est ouvert par défaut.</li>
+                      <li><b>Fix (Orthophoniste) :</b> La liste de mots (colonne de droite) s'aligne correctement avec le haut du tableau principal — colonne sticky pendant le scroll.</li>
+                      <li><b>UI :</b> Les boutons "Accueil" et de catégorie bénéficient du même effet flottant que les boutons du header.</li>
+                    </ul>
+                  </div>
+                </details>
 
                 <details class="release-collapse">
                   <summary><span class="release-collapse-title">v1.14.0 - UX Orthophoniste : layout &amp; boutons flottants</span><span class="release-collapse-date">4 Mai 2026</span></summary>
@@ -1332,14 +1389,6 @@
               <input type="text" id="nouveau-mot" placeholder="Mot travaillé..." style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--panel-border); background: var(--button-bg); color: var(--text-color); font-size: 1rem; box-sizing: border-box;">
               <div id="nouveau-mot-hint" style="margin-top: 6px; font-size: 0.8rem; color: var(--subtext-color); display: none;"></div>
             </div>
-            <div>
-              <label for="nouveau-total" style="display: block; margin-bottom: 6px; font-size: 0.9rem; color: var(--accent); font-weight: 700;">Total</label>
-              <input type="number" id="nouveau-total" value="0" min="0" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--panel-border); background: var(--button-bg); color: var(--text-color); font-size: 1rem; box-sizing: border-box;">
-            </div>
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <input type="checkbox" id="nouveau-complet" style="width: 18px; height: 18px; cursor: pointer; flex-shrink: 0;">
-              <label for="nouveau-complet" style="font-size: 0.95rem; color: var(--text-color); cursor: pointer;">Séance complète</label>
-            </div>
           </div>
           <div style="margin-top: 24px;">
             <button type="button" id="submit-nouveau" class="btn-resend" style="width: 100%;">Enregistrer l'entrée</button>
@@ -1349,7 +1398,7 @@
       </div>
 
     <footer class="page-footer">
-      <p>© 2026 Christophe Lambert • Site v1.15.0 • API <span id="api-version">...</span></p>
+      <p>© 2026 Christophe Lambert • Site v1.18.0 • API <span id="api-version">...</span></p>
     </footer>
 
     <div id="toast-container" aria-live="polite" aria-atomic="false"></div>
@@ -1897,9 +1946,8 @@
               <thead>
                 <tr>
                   <th>Date</th>
-                  <th>Mot(s)</th>
-                  <th style="text-align:center;">Total</th>
-                  <th style="text-align:center;">Statut</th>
+                  <th>Mots</th>
+                  <th>Progression</th>
                 </tr>
               </thead>
               <tbody>`;
@@ -1909,30 +1957,22 @@
               weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
             });
 
-            let motDisplay;
-            if (!row.Total) {
-              motDisplay = 'Aucun';
-            } else if (!row.Mot) {
-              motDisplay = '<em>Plusieurs</em>';
-            } else {
-              motDisplay = escapeHtml(row.Mot);
-            }
-
-            const statusClass = row.Complet ? 'status-complet' : 'status-incomplet';
-            const statusText  = row.Complet ? 'Complet' : 'Incomplet';
-            const hasMot      = !!row.Mot;
+            const total = row.Total || 0;
+            const motDisplay = total > 0 ? escapeHtml(row.Mots) : 'Aucun';
+            const pct = Math.min(100, Math.round(total / 10 * 100));
+            const isDone = total >= 10;
 
             let rowClass = 'ortho-row';
-            if (hasMot) rowClass += ' clickable';
-            if (selectedMot && hasMot) {
-              rowClass += row.Mot === selectedMot ? ' highlighted' : ' dimmed';
+            if (row.Mots) rowClass += ' clickable';
+            if (selectedMot && row.Mots) {
+              const rowWords = row.Mots.split(', ');
+              rowClass += rowWords.includes(selectedMot) ? ' highlighted' : ' dimmed';
             }
 
-            html += `<tr class="${rowClass}" data-mot="${escapeHtml(row.Mot || '')}">
+            html += `<tr class="${rowClass}" data-mots="${escapeHtml(row.Mots || '')}">
               <td style="font-size:0.85rem;">${date}</td>
               <td style="color:var(--accent); font-weight:700;">${motDisplay}</td>
-              <td style="text-align:center; font-weight:700;">${row.Total || 0}</td>
-              <td style="text-align:center;"><span class="status-badge ${statusClass}">${statusText}</span></td>
+              <td><div class="progress-track"><div class="progress-fill${isDone ? ' done' : ''}" style="width:${pct}%"></div><span class="progress-label">${total}/10</span></div></td>
             </tr>`;
           });
 
@@ -1966,9 +2006,11 @@
 
       // Clic sur une ligne du tableau orthophoniste
       orthoTableContent.addEventListener('click', (e) => {
-        const row = e.target.closest('tr.ortho-row[data-mot]');
-        if (!row || !row.dataset.mot) return;
-        selectedMot = selectedMot === row.dataset.mot ? null : row.dataset.mot;
+        const row = e.target.closest('tr.ortho-row[data-mots]');
+        if (!row || !row.dataset.mots) return;
+        const mots = row.dataset.mots.split(', ');
+        if (mots.length !== 1) return;
+        selectedMot = selectedMot === mots[0] ? null : mots[0];
         renderOrthoTable();
         if (motsCol.style.display !== 'none') {
           renderMotsList();
@@ -2118,8 +2160,6 @@
       btnNouveau.addEventListener('click', () => {
         document.getElementById('nouveau-date').value = '';
         document.getElementById('nouveau-mot').value = '';
-        document.getElementById('nouveau-total').value = '0';
-        document.getElementById('nouveau-complet').checked = false;
         document.getElementById('nouveau-error').style.display = 'none';
         document.getElementById('nouveau-mot-hint').style.display = 'none';
         nouveauModal.style.display = 'block';
@@ -2128,8 +2168,6 @@
       submitNouveau.addEventListener('click', async () => {
         const date = document.getElementById('nouveau-date').value;
         const mot = document.getElementById('nouveau-mot').value.trim();
-        const total = parseInt(document.getElementById('nouveau-total').value, 10) || 0;
-        const complet = document.getElementById('nouveau-complet').checked;
         const errorEl = document.getElementById('nouveau-error');
 
         if (!date) {
@@ -2146,7 +2184,7 @@
           const response = await apiFetch(`${API_BASE}/api/orthophoniste`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ mot: mot || null, date, total, complet })
+            body: JSON.stringify({ mot: mot || null, date })
           });
           const result = await response.json();
 
