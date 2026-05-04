@@ -512,6 +512,53 @@
 
       .month-drawer .data-table { border-radius: 0; margin: 0; }
 
+      /* Tableau unique orthophoniste avec en-tête global partagé */
+      .ortho-single-table { border-collapse: collapse; width: 100%; }
+
+      .ortho-single-table thead th {
+        position: sticky;
+        top: 66px;
+        background-color: var(--button-bg);
+        z-index: 5;
+        border-bottom: 2px solid var(--panel-border);
+      }
+
+      .month-group-header td {
+        background-color: rgba(138, 165, 195, 0.08);
+        color: var(--accent);
+        font-weight: 700;
+        font-size: 0.88rem;
+        padding: 9px 14px;
+        cursor: pointer;
+        user-select: none;
+        transition: background-color 0.15s ease;
+        border-top: 2px solid var(--panel-border);
+      }
+
+      .month-group-header:first-child td { border-top: none; }
+      .month-group-header:hover td { background-color: rgba(138, 165, 195, 0.16); }
+
+      .month-group-toggle {
+        display: inline-block;
+        font-size: 0.6em;
+        margin-right: 8px;
+        transition: transform 0.2s ease;
+        vertical-align: middle;
+      }
+
+      .month-group-header.collapsed-group .month-group-toggle {
+        transform: rotate(-90deg);
+      }
+
+      .month-group-meta {
+        float: right;
+        font-weight: 600;
+        font-size: 0.8rem;
+        color: var(--subtext-color);
+      }
+
+      .month-row-hidden { display: none; }
+
       /* Barre d'actions Orthophoniste */
       .ortho-action-bar {
         display: flex;
@@ -520,6 +567,36 @@
         align-items: center;
         margin-top: 16px;
         margin-bottom: 2px;
+        position: sticky;
+        top: 8px;
+        z-index: 20;
+        padding: 10px 12px;
+        border-radius: 14px;
+        transition: background-color 0.35s ease, backdrop-filter 0.35s ease, box-shadow 0.35s ease;
+      }
+
+      .ortho-action-bar.is-sticky {
+        background-color: rgba(37, 46, 66, 0.62);
+        backdrop-filter: blur(16px) saturate(1.5);
+        -webkit-backdrop-filter: blur(16px) saturate(1.5);
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.28);
+      }
+
+      .light-theme .ortho-action-bar.is-sticky {
+        background-color: rgba(233, 237, 243, 0.68);
+      }
+
+      .ortho-action-bar.is-sticky .action-btn {
+        opacity: 0.65;
+        filter: blur(1px);
+        transition: opacity 0.2s ease, filter 0.2s ease, transform 0.18s ease,
+                    background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+      }
+
+      .ortho-action-bar.is-sticky:hover .action-btn,
+      .ortho-action-bar.is-sticky .action-btn:hover {
+        opacity: 1;
+        filter: none;
       }
 
       #btn-list-mots {
@@ -1019,18 +1096,30 @@
 
             <!-- Dernière release — toujours visible -->
             <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 24px;">
-              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.21.0 - Thème sur la page login &amp; fix bouton Compte</h3>
+              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.22.0 - UX Orthophoniste : tableau unifié, barre sticky &amp; export Excel/PDF</h3>
               <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 4 Mai 2026</p>
               <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
-                <li><b>UX :</b> Les boutons de thème 🌙 / ☀️ sont désormais visibles dès la page de connexion — plus besoin d'être connecté pour changer de thème.</li>
-                <li><b>Fix :</b> Le bouton 👤 (Compte) forçait le thème sombre au clic — il partageait la classe <code>theme-toggle-button</code> et déclenchait <code>setTheme(undefined)</code>. Corrigé par un guard sur <code>data-theme</code>.</li>
+                <li><b>UX (Orthophoniste) :</b> L'en-tête de colonnes (Date / Mots / Progression) n'apparaît plus qu'une seule fois, en haut du tableau global — plus de répétition pour chaque tiroir mensuel. Les mois restent repliables/dépliables avec mémorisation de l'état.</li>
+                <li><b>UX (Orthophoniste) :</b> La barre d'actions (Import/Export, Nouvelle entrée, Liste de mots) est désormais <em>sticky</em> : elle se fige en haut de la page lors du scroll. Le contenu défile derrière elle.</li>
+                <li><b>UX (Orthophoniste) :</b> Effet <em>frosted glass</em> sur la barre sticky au scroll — les boutons sont légèrement floutés, reprennent leur clarté au survol.</li>
+                <li><b>Export :</b> Le CSV est remplacé par deux formats : <b>Excel (.xlsx)</b> via SheetJS (colonnes correctement dimensionnées) et <b>PDF</b> via jsPDF + AutoTable (tableau mis en page, couleurs de la charte).</li>
               </ul>
             </div>
 
             <!-- Versions précédentes — tiroir fermé par défaut -->
             <details class="release-drawer">
-              <summary>Versions précédentes (27)</summary>
+              <summary>Versions précédentes (28)</summary>
               <div class="release-drawer-content">
+
+                <details class="release-collapse">
+                  <summary><span class="release-collapse-title">v1.21.0 - Thème sur la page login &amp; fix bouton Compte</span><span class="release-collapse-date">4 Mai 2026</span></summary>
+                  <div class="release-collapse-body">
+                    <ul>
+                      <li><b>UX :</b> Les boutons de thème 🌙 / ☀️ sont désormais visibles dès la page de connexion — plus besoin d'être connecté pour changer de thème.</li>
+                      <li><b>Fix :</b> Le bouton 👤 (Compte) forçait le thème sombre au clic — corrigé par un guard sur <code>data-theme</code>.</li>
+                    </ul>
+                  </div>
+                </details>
 
                 <details class="release-collapse">
                   <summary><span class="release-collapse-title">v1.20.1 - Hotfix mobile : alignement bouton "Liste de mots"</span><span class="release-collapse-date">4 Mai 2026</span></summary>
@@ -1356,6 +1445,7 @@
 
           <!-- Zone tableau + actions (visible après chargement) -->
           <div id="ortho-data-container" style="display: none;">
+            <div id="ortho-sentinel" style="height:1px; pointer-events:none; visibility:hidden; margin-top:-1px;"></div>
             <div class="ortho-action-bar">
               <button type="button" id="btn-import-export" class="action-btn" title="Importer / Exporter" aria-label="Importer ou Exporter des données">↕ Import/Export</button>
               <button type="button" id="btn-nouveau" class="action-btn" title="Nouvelle entrée" aria-label="Ajouter une nouvelle entrée" style="display: none; background-color: rgba(40, 167, 69, 0.18); border-color: rgba(40, 167, 69, 0.45);">➕ Nouvelle entrée</button>
@@ -1408,8 +1498,11 @@
             <button type="button" id="close-import-export-modal" style="background:none; border:none; color:var(--text-color); font-size: 1.5rem; cursor:pointer;">&times;</button>
           </div>
           <h3 style="margin-top: 0; color: var(--accent);">📤 Exporter</h3>
-          <p style="color: var(--panel-text-color); font-size: 0.9rem; margin-bottom: 12px;">Télécharger toutes les données orthophoniste au format CSV.</p>
-          <button type="button" id="btn-export-csv" class="btn-resend" style="width: 100%; margin-bottom: 24px;">Télécharger le CSV</button>
+          <p style="color: var(--panel-text-color); font-size: 0.9rem; margin-bottom: 12px;">Télécharger toutes les données orthophoniste.</p>
+          <div style="display: flex; gap: 10px; margin-bottom: 24px;">
+            <button type="button" id="btn-export-excel" class="btn-resend" style="flex: 1;">📊 Excel (.xlsx)</button>
+            <button type="button" id="btn-export-pdf" class="btn-resend" style="flex: 1;">📄 PDF</button>
+          </div>
           <hr style="border: 0; border-top: 1px solid var(--panel-border); margin-bottom: 20px;">
           <h3 style="margin-top: 0; color: var(--accent);">📥 Importer des données</h3>
           <p style="color: var(--panel-text-color); font-size: 0.9rem; margin-bottom: 10px;">Collez vos données Numbers/Excel au format texte.</p>
@@ -1444,10 +1537,15 @@
       </div>
 
     <footer class="page-footer">
-      <p>© 2026 Christophe Lambert • Site v1.21.0 • API <span id="api-version">...</span></p>
+      <p>© 2026 Christophe Lambert • Site v1.22.0 • API <span id="api-version">...</span></p>
     </footer>
 
     <div id="toast-container" aria-live="polite" aria-atomic="false"></div>
+
+    <!-- Bibliothèques export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
     <script>
       // ── Toasts ──────────────────────────────────────────────────────────────
@@ -1945,6 +2043,7 @@
       let orthoData = [];
       let motsData  = [];
       let selectedMot = null;
+      let openMonths = new Set(); // mois ouverts dans le tableau (clé = "YYYY-MM")
 
       const orthoContainer   = document.getElementById('ortho-data-container');
       const orthoTableContent = document.getElementById('ortho-table-content');
@@ -1977,24 +2076,30 @@
           monthMap[key].rows.push(row);
         });
 
-        let html = '';
+        // Initialise le premier mois ouvert si l'état est vide (premier rendu)
+        if (openMonths.size === 0 && months.length > 0) openMonths.add(months[0].key);
 
-        months.forEach((month, idx) => {
+        let html = `<table class="data-table ortho-single-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Mots</th>
+              <th>Progression</th>
+            </tr>
+          </thead>
+          <tbody>`;
+
+        months.forEach(month => {
           const count = month.rows.length;
-          html += `<details class="month-drawer"${idx === 0 ? ' open' : ''}>
-            <summary class="month-drawer-summary">
-              <span>${month.label}</span>
-              <span class="month-count">${count} séance${count !== 1 ? 's' : ''}</span>
-            </summary>
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Mots</th>
-                  <th>Progression</th>
-                </tr>
-              </thead>
-              <tbody>`;
+          const isOpen = openMonths.has(month.key);
+
+          html += `<tr class="month-group-header${isOpen ? '' : ' collapsed-group'}" data-month-key="${month.key}">
+            <td colspan="3">
+              <span class="month-group-toggle">▼</span>
+              ${month.label}
+              <span class="month-group-meta">${count} séance${count !== 1 ? 's' : ''}</span>
+            </td>
+          </tr>`;
 
           month.rows.forEach(row => {
             const date = new Date(row.Date).toLocaleDateString('fr-FR', {
@@ -2008,22 +2113,35 @@
 
             let rowClass = 'ortho-row';
             if (row.Mots) rowClass += ' clickable';
+            if (!isOpen) rowClass += ' month-row-hidden';
             if (selectedMot && row.Mots) {
               const rowWords = row.Mots.split(', ');
               rowClass += rowWords.includes(selectedMot) ? ' highlighted' : ' dimmed';
             }
 
-            html += `<tr class="${rowClass}" data-mots="${escapeHtml(row.Mots || '')}">
+            html += `<tr class="${rowClass}" data-mots="${escapeHtml(row.Mots || '')}" data-month-key="${month.key}">
               <td style="font-size:0.85rem;">${date}</td>
               <td style="color:var(--accent); font-weight:700;">${motDisplay}</td>
               <td><div class="progress-track"><div class="progress-fill${isDone ? ' done' : ''}" style="width:${pct}%"></div><span class="progress-label">${total}/10</span></div></td>
             </tr>`;
           });
-
-          html += `</tbody></table></details>`;
         });
 
+        html += '</tbody></table>';
         orthoTableContent.innerHTML = html;
+
+        // Gestionnaire de repli/ouverture des mois (sans re-render)
+        orthoTableContent.querySelectorAll('tr.month-group-header').forEach(headerRow => {
+          headerRow.addEventListener('click', () => {
+            const key = headerRow.dataset.monthKey;
+            const willOpen = !openMonths.has(key);
+            if (willOpen) openMonths.add(key); else openMonths.delete(key);
+            headerRow.classList.toggle('collapsed-group', !willOpen);
+            orthoTableContent.querySelectorAll(`tr.ortho-row[data-month-key="${key}"]`).forEach(r => {
+              r.classList.toggle('month-row-hidden', !willOpen);
+            });
+          });
+        });
       }
 
       function renderMotsList() {
@@ -2081,12 +2199,14 @@
         if (tableSummary) tableSummary.textContent = 'Données orthophoniste (chargement…)';
         orthoTableContent.innerHTML = '<p style="text-align:center; margin-top:20px; color:var(--subtext-color);">Chargement...</p>';
         selectedMot = null;
+        openMonths = new Set();
 
         try {
           const response = await apiFetch(`${API_BASE}/api/orthophoniste`);
           if (!response.ok) throw new Error(`Erreur ${response.status}`);
           orthoData = await response.json();
           renderOrthoTable();
+          setupStickyBar();
           if (tableSummary) tableSummary.textContent = `Données orthophoniste (${orthoData.length} entrée${orthoData.length !== 1 ? 's' : ''})`;
           // Raffraîchir la liste si elle est déjà ouverte
           if (motsCol.style.display !== 'none') renderMotsList();
@@ -2127,13 +2247,85 @@
         renderMotsList();
       });
 
+      // ── Barre sticky : détection par IntersectionObserver ───────────────────
+      let stickyBarObserver = null;
+      function setupStickyBar() {
+        if (stickyBarObserver) return;
+        const sentinel = document.getElementById('ortho-sentinel');
+        const actionBar = document.querySelector('.ortho-action-bar');
+        if (!sentinel || !actionBar) return;
+        stickyBarObserver = new IntersectionObserver(
+          ([entry]) => actionBar.classList.toggle('is-sticky', !entry.isIntersecting),
+          { threshold: 0 }
+        );
+        stickyBarObserver.observe(sentinel);
+      }
+
+      // ── Export Excel (.xlsx) via SheetJS ─────────────────────────────────────
+      function exportToExcel() {
+        if (!orthoData.length) { showToast('Aucune donnée à exporter.', 'error'); return; }
+        if (typeof XLSX === 'undefined') { showToast('Bibliothèque Excel non chargée — réessayez.', 'error'); return; }
+
+        const rows = [
+          ['Date', 'Mots', 'Total', 'Complet'],
+          ...orthoData.map(r => [
+            new Date(r.Date).toLocaleDateString('fr-FR'),
+            r.Mots || '',
+            r.Total || 0,
+            (r.Total || 0) >= 10 ? 'Oui' : 'Non'
+          ])
+        ];
+
+        const ws = XLSX.utils.aoa_to_sheet(rows);
+        ws['!cols'] = [{ wch: 22 }, { wch: 50 }, { wch: 8 }, { wch: 10 }];
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Orthophoniste');
+        XLSX.writeFile(wb, 'orthophoniste-export.xlsx');
+        showToast('Export Excel téléchargé.', 'success');
+      }
+
+      // ── Export PDF via jsPDF + AutoTable ─────────────────────────────────────
+      function exportToPdf() {
+        if (!orthoData.length) { showToast('Aucune donnée à exporter.', 'error'); return; }
+        if (typeof window.jspdf === 'undefined') { showToast('Bibliothèque PDF non chargée — réessayez.', 'error'); return; }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+        doc.setFontSize(15);
+        doc.setTextColor(68, 90, 114);
+        doc.text('Données Orthophoniste', 14, 18);
+        doc.setFontSize(9);
+        doc.setTextColor(140);
+        doc.text(`Exporté le ${new Date().toLocaleDateString('fr-FR')}`, 14, 25);
+
+        const body = orthoData.map(r => [
+          new Date(r.Date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }),
+          r.Mots || 'Aucun',
+          String(r.Total || 0) + '/10',
+          (r.Total || 0) >= 10 ? 'Oui' : 'Non'
+        ]);
+
+        doc.autoTable({
+          startY: 30,
+          head: [['Date', 'Mots', 'Total', 'Complet']],
+          body,
+          headStyles: { fillColor: [68, 90, 114], textColor: 255, fontStyle: 'bold', fontSize: 9.5 },
+          alternateRowStyles: { fillColor: [242, 246, 251] },
+          styles: { fontSize: 8.5, cellPadding: 3.5 },
+          columnStyles: { 0: { cellWidth: 50 }, 1: { cellWidth: 90 }, 2: { cellWidth: 22 }, 3: { cellWidth: 22 } }
+        });
+
+        doc.save('orthophoniste-export.pdf');
+        showToast('Export PDF téléchargé.', 'success');
+      }
+
       // ── Import / Export modal ────────────────────────────────────────────────
       const importExportModal = document.getElementById('import-export-modal');
       const closeImportExportModal = document.getElementById('close-import-export-modal');
       const btnImportExport = document.getElementById('btn-import-export');
       const submitImport = document.getElementById('submit-import');
       const csvArea = document.getElementById('csv-import-area');
-      const btnExportCsv = document.getElementById('btn-export-csv');
 
       // ── Nouvelle entrée modal (Admin) ────────────────────────────────────────
       const nouveauModal = document.getElementById('nouveau-modal');
@@ -2177,25 +2369,8 @@
         }
       });
 
-      btnExportCsv.addEventListener('click', () => {
-        btnExportCsv.disabled = true;
-        btnExportCsv.textContent = 'Export en cours...';
-        apiFetch(`${API_BASE}/api/export-csv`)
-          .then(r => r.blob())
-          .then(blob => {
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'orthophoniste-export.csv';
-            a.click();
-            URL.revokeObjectURL(url);
-          })
-          .catch(() => showToast("Erreur lors de l'export.", 'error'))
-          .finally(() => {
-            btnExportCsv.disabled = false;
-            btnExportCsv.textContent = 'Télécharger le CSV';
-          });
-      });
+      document.getElementById('btn-export-excel').addEventListener('click', exportToExcel);
+      document.getElementById('btn-export-pdf').addEventListener('click', exportToPdf);
 
       closeNouveauModal.addEventListener('click', () => {
         nouveauModal.style.display = 'none';
