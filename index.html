@@ -1096,11 +1096,11 @@
 
             <!-- Dernière release — toujours visible -->
             <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 24px;">
-              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.22.1 - Fix Orthophoniste : mois fermés par défaut &amp; en-tête sticky corrigé</h3>
+              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.22.2 - Fix Orthophoniste : en-tête sticky persistant après re-render</h3>
               <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 4 Mai 2026</p>
               <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
-                <li><b>Fix (Orthophoniste) :</b> Tous les mois sont désormais fermés par défaut — aucun mois ne s'ouvre automatiquement au chargement.</li>
-                <li><b>Fix (Orthophoniste) :</b> L'en-tête de colonnes sticky (Date / Mots / Progression) se recale dynamiquement sous la barre d'actions — plus de lignes visibles au-dessus de l'en-tête lors du scroll.</li>
+                <li><b>Fix (Orthophoniste) :</b> L'en-tête de colonnes (Date / Mots / Progression) reste correctement positionné sous la barre d'actions après chaque re-render du tableau — le <code>top</code> sticky est ré-appliqué à chaque reconstruction du DOM.</li>
+                <li><b>Fix (Orthophoniste) :</b> Suppression du cas <code>top: 0px</code> qui masquait l'en-tête derrière la barre d'actions lors du scroll (race condition avec l'IntersectionObserver).</li>
               </ul>
             </div>
 
@@ -1547,7 +1547,7 @@
       </div>
 
     <footer class="page-footer">
-      <p>© 2026 Christophe Lambert • Site v1.22.1 • API <span id="api-version">...</span></p>
+      <p>© 2026 Christophe Lambert • Site v1.22.2 • API <span id="api-version">...</span></p>
     </footer>
 
     <div id="toast-container" aria-live="polite" aria-atomic="false"></div>
@@ -2138,6 +2138,13 @@
         html += '</tbody></table>';
         orthoTableContent.innerHTML = html;
 
+        // Ré-appliquer le top sticky sur les nouveaux <th> (innerHTML recrée le DOM)
+        const _actionBar = document.querySelector('.ortho-action-bar');
+        if (_actionBar) {
+          const _top = (8 + _actionBar.offsetHeight) + 'px';
+          orthoTableContent.querySelectorAll('thead th').forEach(th => th.style.top = _top);
+        }
+
         // Gestionnaire de repli/ouverture des mois (sans re-render)
         orthoTableContent.querySelectorAll('tr.month-group-header').forEach(headerRow => {
           headerRow.addEventListener('click', () => {
@@ -2262,15 +2269,16 @@
         const sentinel = document.getElementById('ortho-sentinel');
         const actionBar = document.querySelector('.ortho-action-bar');
         if (!sentinel || !actionBar) return;
-        const updateTheadTop = (isSticky) => {
-          const top = isSticky ? (8 + actionBar.offsetHeight) + 'px' : '0px';
+        const updateTheadTop = () => {
+          const top = (8 + actionBar.offsetHeight) + 'px';
           document.querySelectorAll('.ortho-single-table thead th').forEach(th => th.style.top = top);
         };
+        updateTheadTop();
         stickyBarObserver = new IntersectionObserver(
           ([entry]) => {
             const isSticky = !entry.isIntersecting;
             actionBar.classList.toggle('is-sticky', isSticky);
-            updateTheadTop(isSticky);
+            updateTheadTop();
           },
           { threshold: 0 }
         );
