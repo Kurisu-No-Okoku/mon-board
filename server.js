@@ -8,7 +8,7 @@ const bcrypt = require('bcrypt');
 const app = express();
 const port = process.env.PORT || 3000;
 const publicHost = process.env.PUBLIC_URL || `http://100.99.13.22:${port}`;
-const apiVersion = '1.12.0';
+const apiVersion = '1.15.0';
 
 // FIX: suppression de la référence à `host` qui n'était pas défini (ReferenceError)
 const dbConfig = {
@@ -38,6 +38,14 @@ pool.on('error', err => {
 
 // Sessions en mémoire : token -> { username, role }
 const sessions = new Map();
+
+// Rate limiting login : max 10 tentatives par IP sur 15 minutes
+const loginAttempts = new Map();
+const LOGIN_RATE_WINDOW = 15 * 60 * 1000;
+const LOGIN_RATE_MAX = 10;
+
+// Regex de validation du mot de passe : 6+ chars, 1 maj, 1 chiffre
+const PASSWORD_REGEX = /^(?=.*[A-Z])(?=.*\d).{6,}$/;
 
 function generateToken() {
   return crypto.randomBytes(32).toString('hex');
@@ -194,11 +202,25 @@ app.post('/api/buttons', adminMiddleware, async (req, res) => {
 });
 
 app.post('/api/login', async (req, res) => {
-  const { username, password } = req.body;
+  const ip = req.ip || req.socket.remoteAddress || 'unknown';
+  const now = Date.now();
 
-  if (!username) {
-    return res.status(400).json({ error: "Nom d'utilisateur requis." });
+  // Vérification du rate limit
+  const attempt = loginAttempts.get(ip) || { count: 0, resetAt: now + LOGIN_RATE_WINDOW };
+  if (now > attempt.resetAt) { attempt.count = 0; attempt.resetAt = now + LOGIN_RATE_WINDOW; }
+  if (attempt.count >= LOGIN_RATE_MAX) {
+    const wait = Math.ceil((attempt.resetAt - now) / 60000);
+    return res.status(429).json({ error: `Trop de tentatives. Réessayez dans ${wait} minute${wait > 1 ? 's' : ''}.` });
   }
+
+  const fail = (status, msg) => {
+    attempt.count++;
+    loginAttempts.set(ip, attempt);
+    return res.status(status).json({ error: msg });
+  };
+
+  const { username, password } = req.body;
+  if (!username) return res.status(400).json({ error: "Nom d'utilisateur requis." });
 
   try {
     await poolConnect;
@@ -206,37 +228,29 @@ app.post('/api/login', async (req, res) => {
       .input('username', sql.NVarChar, username.trim())
       .query('SELECT UserID, Username, Email, Role, MustResetPassword, MotDePasseIsActive, PasswordHash FROM Utilisateurs WHERE Username = @username');
 
-    if (result.recordset.length === 0) {
-      return res.status(401).json({ error: 'Utilisateur non reconnu.' });
-    }
+    if (result.recordset.length === 0) return fail(401, 'Utilisateur non reconnu.');
 
     const user = result.recordset[0];
 
     if (user.MotDePasseIsActive) {
-      // Compte actif : mot de passe obligatoire pour tous les utilisateurs
-      if (!password) {
-        return res.status(400).json({ error: 'Mot de passe requis.' });
-      }
+      if (!password) return fail(400, 'Mot de passe requis.');
       try {
         const match = await bcrypt.compare(password, user.PasswordHash);
-        if (!match) {
-          return res.status(401).json({ error: 'Identifiant ou mot de passe incorrect.' });
-        }
+        if (!match) return fail(401, 'Identifiant ou mot de passe incorrect.');
       } catch (bcryptError) {
         console.error('Erreur bcrypt (hash invalide ?):', bcryptError.message);
-        return res.status(401).json({ error: 'Identifiant ou mot de passe incorrect.' });
+        return fail(401, 'Identifiant ou mot de passe incorrect.');
       }
     } else {
-      // Compte non activé : seul l'Admin peut se connecter sans mot de passe
-      if (user.Role !== 'Admin') {
-        return res.status(401).json({ error: "Compte en attente d'activation. Veuillez patienter." });
-      }
+      if (user.Role !== 'Admin') return fail(401, "Compte en attente d'activation. Veuillez patienter.");
     }
+
+    // Succès : réinitialiser le compteur d'échecs
+    loginAttempts.delete(ip);
 
     const token = generateToken();
     sessions.set(token, { username: user.Username, role: user.Role || 'User' });
 
-    // On ne renvoie jamais le hash du mot de passe au client
     const { PasswordHash, ...safeUser } = user;
     res.json({ ...safeUser, token });
   } catch (error) {
@@ -250,6 +264,10 @@ app.post('/api/reset-password', async (req, res) => {
 
   if (!login || !password) {
     return res.status(400).json({ error: 'Login et mot de passe requis.' });
+  }
+
+  if (!PASSWORD_REGEX.test(password)) {
+    return res.status(400).json({ error: 'Le mot de passe doit contenir au moins 6 caractères, une majuscule et un chiffre.' });
   }
 
   const cleanLogin = login.trim();
