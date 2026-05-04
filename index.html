@@ -522,6 +522,10 @@
         margin-bottom: 2px;
       }
 
+      #btn-list-mots {
+        margin-left: auto;
+      }
+
       .action-btn {
         height: 36px;
         padding: 0 14px;
@@ -927,6 +931,11 @@
           height: 34px;
         }
 
+        #btn-list-mots {
+          margin-left: 0;
+          width: 100%;
+        }
+
         .section-drawer > summary {
           font-size: 0.9rem;
           padding: 10px 14px;
@@ -946,7 +955,7 @@
           <h1>Board de Nathanaël</h1>
           <p id="welcome-message" style="display: none;"></p>
           <div class="header-controls">
-            <div class="theme-toggle" id="theme-toggle-container" aria-label="Toggle thème clair ou sombre" style="display: none;">
+            <div class="theme-toggle" id="theme-toggle-container" aria-label="Toggle thème clair ou sombre" style="display: flex;">
               <button type="button" class="theme-toggle-button active" data-theme="dark" aria-label="Thème sombre">🌙</button>
               <button type="button" class="theme-toggle-button" data-theme="light" aria-label="Thème clair">☀️</button>
             </div>
@@ -1010,18 +1019,55 @@
 
             <!-- Dernière release — toujours visible -->
             <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 24px;">
-              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.18.0 - Fix transaction insertion &amp; thème sombre éclairci</h3>
+              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.21.0 - Thème sur la page login &amp; fix bouton Compte</h3>
               <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 4 Mai 2026</p>
               <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
-                <li><b>Fix (API) :</b> L'ajout manuel d'une entrée (<code>POST /api/orthophoniste</code>) est maintenant enveloppé dans une transaction — plus de gaps d'IDENTITY si une étape échoue.</li>
-                <li><b>UI :</b> Fond sombre adouci — <code>#252e42</code> au lieu de <code>#1c2030</code>, plus agréable à l'œil tout en restant un thème sombre.</li>
+                <li><b>UX :</b> Les boutons de thème 🌙 / ☀️ sont désormais visibles dès la page de connexion — plus besoin d'être connecté pour changer de thème.</li>
+                <li><b>Fix :</b> Le bouton 👤 (Compte) forçait le thème sombre au clic — il partageait la classe <code>theme-toggle-button</code> et déclenchait <code>setTheme(undefined)</code>. Corrigé par un guard sur <code>data-theme</code>.</li>
               </ul>
             </div>
 
             <!-- Versions précédentes — tiroir fermé par défaut -->
             <details class="release-drawer">
-              <summary>Versions précédentes (24)</summary>
+              <summary>Versions précédentes (27)</summary>
               <div class="release-drawer-content">
+
+                <details class="release-collapse">
+                  <summary><span class="release-collapse-title">v1.20.1 - Hotfix mobile : alignement bouton "Liste de mots"</span><span class="release-collapse-date">4 Mai 2026</span></summary>
+                  <div class="release-collapse-body">
+                    <ul>
+                      <li><b>Fix (Mobile) :</b> Bouton "📋 Liste de mots" mal aligné sur petit écran — <code>margin-left: auto</code> déplacé vers le CSS et annulé sur mobile (≤520 px).</li>
+                    </ul>
+                  </div>
+                </details>
+
+                <details class="release-collapse">
+                  <summary><span class="release-collapse-title">v1.20.0 - Total &amp; Complet stockés en BDD via trigger</span><span class="release-collapse-date">4 Mai 2026</span></summary>
+                  <div class="release-collapse-body">
+                    <ul>
+                      <li><b>BDD :</b> Les colonnes <code>Total</code> et <code>Complet</code> sont de retour dans <code>Orthophoniste</code>, maintenues par le trigger <code>trg_Update_Ortho_Stats</code> sur <code>Orthophoniste_Mots</code>.</li>
+                    </ul>
+                  </div>
+                </details>
+
+                <details class="release-collapse">
+                  <summary><span class="release-collapse-title">v1.19.0 - Nettoyage BDD : suppression colonnes Total &amp; Complet</span><span class="release-collapse-date">4 Mai 2026</span></summary>
+                  <div class="release-collapse-body">
+                    <ul>
+                      <li><b>BDD :</b> Suppression des colonnes <code>Total</code> et <code>Complet</code> de <code>Orthophoniste</code> — étape intermédiaire avant la v1.20.0.</li>
+                    </ul>
+                  </div>
+                </details>
+
+                <details class="release-collapse">
+                  <summary><span class="release-collapse-title">v1.18.0 - Fix transaction insertion &amp; thème sombre éclairci</span><span class="release-collapse-date">4 Mai 2026</span></summary>
+                  <div class="release-collapse-body">
+                    <ul>
+                      <li><b>Fix (API) :</b> L'ajout manuel d'une entrée (<code>POST /api/orthophoniste</code>) est maintenant enveloppé dans une transaction — plus de gaps d'IDENTITY si une étape échoue.</li>
+                      <li><b>UI :</b> Fond sombre adouci — <code>#252e42</code> au lieu de <code>#1c2030</code>.</li>
+                    </ul>
+                  </div>
+                </details>
 
                 <details class="release-collapse">
                   <summary><span class="release-collapse-title">v1.17.0 - Barre de progression, mots séparés par virgule &amp; simplification BDD</span><span class="release-collapse-date">4 Mai 2026</span></summary>
@@ -1313,7 +1359,7 @@
             <div class="ortho-action-bar">
               <button type="button" id="btn-import-export" class="action-btn" title="Importer / Exporter" aria-label="Importer ou Exporter des données">↕ Import/Export</button>
               <button type="button" id="btn-nouveau" class="action-btn" title="Nouvelle entrée" aria-label="Ajouter une nouvelle entrée" style="display: none; background-color: rgba(40, 167, 69, 0.18); border-color: rgba(40, 167, 69, 0.45);">➕ Nouvelle entrée</button>
-              <button type="button" id="btn-list-mots" class="action-btn" style="display: none; margin-left: auto;">📋 Liste de mots</button>
+              <button type="button" id="btn-list-mots" class="action-btn" style="display: none;">📋 Liste de mots</button>
             </div>
 
             <!-- Volet déroulant du tableau principal -->
@@ -1398,7 +1444,7 @@
       </div>
 
     <footer class="page-footer">
-      <p>© 2026 Christophe Lambert • Site v1.18.0 • API <span id="api-version">...</span></p>
+      <p>© 2026 Christophe Lambert • Site v1.21.0 • API <span id="api-version">...</span></p>
     </footer>
 
     <div id="toast-container" aria-live="polite" aria-atomic="false"></div>
@@ -1784,7 +1830,6 @@
         welcomeMsg.textContent = `Bienvenue ${username}`;
         welcomeMsg.style.display = 'block';
         loginSection.style.display = 'none';
-        themeToggle.style.display = 'flex';
         categoryNav.style.display = 'flex';
         document.getElementById('category-panel').style.display = 'block';
         userActions.style.display = 'flex';
@@ -1841,7 +1886,6 @@
         clearSession();
 
         loginSection.style.display = 'block';
-        themeToggle.style.display = 'none';
         userActions.style.display = 'none';
         categoryNav.style.display = 'none';
         document.getElementById('category-panel').style.display = 'none';
@@ -2209,6 +2253,7 @@
 
       themeButtons.forEach(button => {
         button.addEventListener('click', () => {
+          if (!button.dataset.theme) return;
           setTheme(button.dataset.theme);
         });
       });
