@@ -756,6 +756,10 @@
         transform: rotate(90deg);
       }
 
+      .release-drawer:not([open]) > .release-drawer-content {
+        display: none;
+      }
+
       .release-drawer-content {
         margin-top: 10px;
         display: flex;
@@ -807,6 +811,10 @@
         font-size: 0.8rem;
         color: var(--subtext-color);
         flex-shrink: 0;
+      }
+
+      .release-collapse:not([open]) > .release-collapse-body {
+        display: none;
       }
 
       .release-collapse-body {
