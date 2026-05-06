@@ -1139,63 +1139,63 @@
               </ul>
             </div>
 
-            <!-- v1.22.6 -->
-            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 24px;">
-              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.22.6 - Admin : masquage RGPD des e-mails &amp; UX bouton documentation</h3>
-              <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 6 Mai 2026</p>
-              <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
-                <li><b>RGPD (Admin) :</b> Les adresses e-mail des utilisateurs sont masquées dans le panneau d'administration — seuls les 2 premiers caractères et le TLD sont visibles (ex. <code>ol***@g***.com</code>).</li>
-                <li><b>UX (Admin) :</b> Le bouton de téléchargement du Guide du Site est déplacé en haut du panneau, avant la liste des utilisateurs.</li>
-              </ul>
-            </div>
-
-            <!-- v1.22.5 -->
-            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 24px;">
-              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.22.5 - Admin : dénomination correcte des états MDP &amp; téléchargement Guide</h3>
-              <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 6 Mai 2026</p>
-              <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
-                <li><b>UX (Admin) :</b> Boutons renommés pour refléter l'<b>état actuel</b> du compte — <b>🔓 Sans MDP</b> (accès sans mot de passe actif : Admin peut se connecter directement, User bloqué) / <b>🔒 MDP exigé</b> (mot de passe obligatoire pour tous).</li>
-                <li><b>UX (Admin) :</b> Légende mise à jour avec les définitions exactes des deux états et leur impact selon le rôle (Admin / User).</li>
-                <li><b>Admin :</b> Nouveau bouton « Télécharger le Guide du Site (PDF) » dans la section Documentation du panneau Admin — appel sécurisé à <code>GET /api/docs/site</code> (admin uniquement).</li>
-                <li><b>API :</b> Nouveau endpoint <code>GET /api/docs/site</code> — renvoie la dernière version du fichier <code>DOC_SITE_*.pdf</code> (accès admin requis).</li>
-              </ul>
-            </div>
-
-            <!-- v1.22.4 -->
-            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 24px;">
-              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.22.4 - UX Admin : modale mobile &amp; boutons clarifiés</h3>
-              <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 6 Mai 2026</p>
-              <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
-                <li><b>UX (Admin — Mobile) :</b> La modale d'administration s'affiche en bottom sheet sur mobile (≤ 520 px) — remonte du bas, bords arrondis, hauteur 90 vh.</li>
-                <li><b>UX (Admin — Mobile) :</b> Chaque ligne utilisateur passe en disposition verticale sur petits écrans : infos en haut, boutons pleine largeur en dessous.</li>
-                <li><b>UX (Admin) :</b> Boutons renommés pour plus de clarté — <b>Réinit. MDP</b> (envoi email reset), légende explicative ajoutée.</li>
-              </ul>
-            </div>
-
-            <!-- v1.22.2 -->
-            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 24px;">
-              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.22.2 - Fix Orthophoniste : en-tête sticky persistant après re-render</h3>
-              <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 4 Mai 2026</p>
-              <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
-                <li><b>Fix (Orthophoniste) :</b> L'en-tête de colonnes (Date / Mots / Progression) reste correctement positionné sous la barre d'actions après chaque re-render du tableau — le <code>top</code> sticky est ré-appliqué à chaque reconstruction du DOM.</li>
-                <li><b>Fix (Orthophoniste) :</b> Suppression du cas <code>top: 0px</code> qui masquait l'en-tête derrière la barre d'actions lors du scroll (race condition avec l'IntersectionObserver).</li>
-              </ul>
-            </div>
-
-            <!-- v1.22.1 -->
-            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 24px;">
-              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.22.1 - Fix Orthophoniste : mois fermés par défaut &amp; en-tête sticky corrigé</h3>
-              <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 4 Mai 2026</p>
-              <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
-                <li><b>Fix (Orthophoniste) :</b> Tous les mois sont désormais fermés par défaut — aucun mois ne s'ouvre automatiquement au chargement.</li>
-                <li><b>Fix (Orthophoniste) :</b> L'en-tête de colonnes sticky (Date / Mots / Progression) se recale dynamiquement sous la barre d'actions — plus de lignes visibles au-dessus de l'en-tête lors du scroll.</li>
-              </ul>
-            </div>
-
             <!-- Versions précédentes — tiroir fermé par défaut -->
             <details class="release-drawer">
-              <summary>Versions précédentes (30)</summary>
+              <summary>Versions précédentes (35)</summary>
               <div class="release-drawer-content">
+
+                <details class="release-collapse">
+                  <summary><span class="release-collapse-title">v1.22.6 - Admin : masquage RGPD des e-mails &amp; UX bouton documentation</span><span class="release-collapse-date">6 Mai 2026</span></summary>
+                  <div class="release-collapse-body">
+                    <ul>
+                      <li><b>RGPD (Admin) :</b> Les adresses e-mail des utilisateurs sont masquées dans le panneau d'administration — seuls les 2 premiers caractères et le TLD sont visibles (ex. <code>ol***@g***.com</code>).</li>
+                      <li><b>UX (Admin) :</b> Le bouton de téléchargement du Guide du Site est déplacé en haut du panneau, avant la liste des utilisateurs.</li>
+                    </ul>
+                  </div>
+                </details>
+
+                <details class="release-collapse">
+                  <summary><span class="release-collapse-title">v1.22.5 - Admin : dénomination correcte des états MDP &amp; téléchargement Guide</span><span class="release-collapse-date">6 Mai 2026</span></summary>
+                  <div class="release-collapse-body">
+                    <ul>
+                      <li><b>UX (Admin) :</b> Boutons renommés pour refléter l'<b>état actuel</b> du compte — <b>🔓 Sans MDP</b> (accès sans mot de passe actif : Admin peut se connecter directement, User bloqué) / <b>🔒 MDP exigé</b> (mot de passe obligatoire pour tous).</li>
+                      <li><b>UX (Admin) :</b> Légende mise à jour avec les définitions exactes des deux états et leur impact selon le rôle (Admin / User).</li>
+                      <li><b>Admin :</b> Nouveau bouton « Télécharger le Guide du Site (PDF) » dans la section Documentation du panneau Admin — appel sécurisé à <code>GET /api/docs/site</code> (admin uniquement).</li>
+                      <li><b>API :</b> Nouveau endpoint <code>GET /api/docs/site</code> — renvoie la dernière version du fichier <code>DOC_SITE_*.pdf</code> (accès admin requis).</li>
+                    </ul>
+                  </div>
+                </details>
+
+                <details class="release-collapse">
+                  <summary><span class="release-collapse-title">v1.22.4 - UX Admin : modale mobile &amp; boutons clarifiés</span><span class="release-collapse-date">6 Mai 2026</span></summary>
+                  <div class="release-collapse-body">
+                    <ul>
+                      <li><b>UX (Admin — Mobile) :</b> La modale d'administration s'affiche en bottom sheet sur mobile (≤ 520 px) — remonte du bas, bords arrondis, hauteur 90 vh.</li>
+                      <li><b>UX (Admin — Mobile) :</b> Chaque ligne utilisateur passe en disposition verticale sur petits écrans : infos en haut, boutons pleine largeur en dessous.</li>
+                      <li><b>UX (Admin) :</b> Boutons renommés pour plus de clarté — <b>Réinit. MDP</b> (envoi email reset), légende explicative ajoutée.</li>
+                    </ul>
+                  </div>
+                </details>
+
+                <details class="release-collapse">
+                  <summary><span class="release-collapse-title">v1.22.2 - Fix Orthophoniste : en-tête sticky persistant après re-render</span><span class="release-collapse-date">4 Mai 2026</span></summary>
+                  <div class="release-collapse-body">
+                    <ul>
+                      <li><b>Fix (Orthophoniste) :</b> L'en-tête de colonnes (Date / Mots / Progression) reste correctement positionné sous la barre d'actions après chaque re-render du tableau — le <code>top</code> sticky est ré-appliqué à chaque reconstruction du DOM.</li>
+                      <li><b>Fix (Orthophoniste) :</b> Suppression du cas <code>top: 0px</code> qui masquait l'en-tête derrière la barre d'actions lors du scroll (race condition avec l'IntersectionObserver).</li>
+                    </ul>
+                  </div>
+                </details>
+
+                <details class="release-collapse">
+                  <summary><span class="release-collapse-title">v1.22.1 - Fix Orthophoniste : mois fermés par défaut &amp; en-tête sticky corrigé</span><span class="release-collapse-date">4 Mai 2026</span></summary>
+                  <div class="release-collapse-body">
+                    <ul>
+                      <li><b>Fix (Orthophoniste) :</b> Tous les mois sont désormais fermés par défaut — aucun mois ne s'ouvre automatiquement au chargement.</li>
+                      <li><b>Fix (Orthophoniste) :</b> L'en-tête de colonnes sticky (Date / Mots / Progression) se recale dynamiquement sous la barre d'actions — plus de lignes visibles au-dessus de l'en-tête lors du scroll.</li>
+                    </ul>
+                  </div>
+                </details>
 
                 <details class="release-collapse">
                   <summary><span class="release-collapse-title">v1.22.0 - UX Orthophoniste : tableau unifié, barre sticky &amp; export Excel/PDF</span><span class="release-collapse-date">4 Mai 2026</span></summary>
