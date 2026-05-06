@@ -301,9 +301,9 @@ def build():
         ["1.22.3",  "2026-05-06", "Ajout colonne RoleNotifPending (Utilisateurs). Trigger TRG_RolePromotionNotif (notification email promotion Admin). Fee971 promu Admin."],
         ["1.22.4",  "2026-05-06", "Index NONCLUSTERED : IX_Historique_UserID_ChangeDate, IX_OrthophonisteMots_MotId. Login applicatif web_nathanael_app (principe du moindre privilège). Stratégie backup + plan d'exécution (sql/)."],
         ["1.22.5",  "2026-05-06", "Auteur : Christophe Lambert. Corrections de mise en page (largeurs de tableaux). Guide DBA reformalisé (langage impersonnel)."],
-        ["1.22.6",  "2026-05-06", "UX Admin (front-end) : modale bottom sheet mobile, boutons renommés (Réinit. MDP / Activer / Bloquer), légende explicative. API v1.22.4."],
-        ["1.22.7",  "2026-05-06", "UX Admin : boutons renommés état courant (🔓 Sans MDP / 🔒 MDP exigé), légende corrigée. Nouveau endpoint GET /api/docs/site. Bouton téléchargement Guide du Site. API v1.22.5."],
-        ["1.22.7",  "2026-05-06", "RGPD : masquage e-mails (ol***@g***.com) + toggle démasquage propre email. Bouton téléchargement Guide déplacé en haut du panneau Admin. API v1.22.7."],
+        ["1.22.5",  "2026-05-06", "UX Admin : boutons renommés état courant (🔓 Sans MDP / 🔒 MDP exigé), légende corrigée. Nouveau endpoint GET /api/docs/site. Bouton téléchargement Guide du Site. API v1.22.5."],
+        ["1.22.6",  "2026-05-06", "RGPD : masquage e-mails (ol***@g***.com) dans le panneau Admin. UX : modale bottom sheet mobile, boutons Réinit. MDP / Activer / Bloquer. API v1.22.6."],
+        ["1.22.7",  "2026-05-06", "Compte : toggle démasquage propre email (👁 affiche / 🙈 remasque). API v1.22.7."],
     ]
     story.append(tbl(rows, [2*cm, 2.8*cm, 12.2*cm]))
     story.append(Spacer(1, 0.3*cm))
