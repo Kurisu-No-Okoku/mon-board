@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Documentation complète WEB_NATHANAEL — v1.22.2"""
+"""Documentation complète WEB_NATHANAEL — v1.22.4"""
 
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
@@ -39,8 +39,8 @@ M = 1.8 * cm
 AUTHOR       = "Kurisu-No-Okoku"
 DATE_CREATE  = "2026-05-05"
 DATE_MODIF   = "2026-05-06"
-VERSION      = "v 1.22.3"
-VERSION_LABEL= "v1.22.3"
+VERSION      = "v 1.22.4"
+VERSION_LABEL= "v1.22.4"
 
 # ── Styles ────────────────────────────────────────────────────────────────────
 def mk_styles():
@@ -271,7 +271,7 @@ def er_diagram():
 # CONTENU
 # ─────────────────────────────────────────────────────────────────────────────
 def build():
-    path = "/Users/kurisu/Documents/Visual Code/docs/DOC_BDD_COMPLETE_v1.22.3.pdf"
+    path = "/Users/kurisu/Documents/Visual Code/docs/DOC_BDD_COMPLETE_v1.22.4.pdf"
     doc  = make_doc(path)
     story = []
 
@@ -287,6 +287,7 @@ def build():
         ["Réseau",       "Tailscale (privé) — non exposé sur Internet"],
         ["Driver API",   "mssql ^9.2.1 (tedious)  |  Node.js 18"],
         ["Version doc.", VERSION_LABEL + "  |  " + DATE_MODIF],
+        ["Login API",   "web_nathanael_app (droits limités) — voir sql/02_permissions.sql"],
     ]))
     story.append(Spacer(1, 0.4*cm))
 
@@ -298,6 +299,7 @@ def build():
         ["1.22.1",  "2026-05-05", "Première documentation"],
         ["1.22.2",  "2026-05-05", "Correction IDENTITY (Mots 1027→29, UserID 1005→7). Procédure startup usp_ReseedIdentity_WEB_NATHANAEL. Documentation complète."],
         ["1.22.3",  "2026-05-06", "Ajout colonne RoleNotifPending (Utilisateurs). Trigger TRG_RolePromotionNotif (notification email promotion Admin). Fee971 promu Admin."],
+        ["1.22.4",  "2026-05-06", "Index NONCLUSTERED : IX_Historique_UserID_ChangeDate, IX_OrthophonisteMots_MotId. Login applicatif web_nathanael_app (principe du moindre privilège). Stratégie backup + plan d'exécution (sql/)."],
     ]
     story.append(tbl(rows, [2*cm, 2.8*cm, 12.2*cm]))
     story.append(Spacer(1, 0.3*cm))
@@ -457,18 +459,25 @@ def build():
 
     # ── 4. Index ──────────────────────────────────────────────────────────────
     story += sec("4. Index")
+    story.append(Paragraph(
+        "Les PK génèrent automatiquement un index CLUSTERED. "
+        "Les index NONCLUSTERED ci-dessous (v1.22.4) accélèrent les filtres fréquents "
+        "qui ne portent pas sur la clé primaire.",
+        S['Body']))
     rows = [
-        ["Table","Index","Type","Unique","Colonnes"],
-        ["Utilisateurs","PK__Utilisat__…","CLUSTERED","Oui","UserID"],
-        ["Utilisateurs","UQ__Utilisat__536C…","NONCLUSTERED","Oui","Username"],
-        ["Utilisateurs","UQ__Utilisat__A9D1…","NONCLUSTERED","Oui","Email"],
-        ["HistoriqueUtilisateurs","PK__Historiq__…","CLUSTERED","Oui","LogID"],
-        ["Mots","PK__Mots__…","CLUSTERED","Oui","Id"],
-        ["Orthophoniste","PK__Orthopho__…","CLUSTERED","Oui","Id"],
-        ["Orthophoniste_Mots","PK_Orthophoniste_Mots","CLUSTERED","Oui","OrthophonisteId, MotId"],
-        ["SiteButtons","PK__SiteButt__…","CLUSTERED","Oui","id"],
+        ["Table","Index","Type","Unique","Colonnes","Rôle"],
+        ["Utilisateurs","PK__Utilisat__…","CLUSTERED","Oui","UserID","Auto PK"],
+        ["Utilisateurs","UQ__Utilisat__536C…","NONCLUSTERED","Oui","Username","Login"],
+        ["Utilisateurs","UQ__Utilisat__A9D1…","NONCLUSTERED","Oui","Email","UNIQUE"],
+        ["HistoriqueUtilisateurs","PK__Historiq__…","CLUSTERED","Oui","LogID","Auto PK"],
+        ["HistoriqueUtilisateurs","IX_Historique_UserID_ChangeDate","NONCLUSTERED","Non","UserID, ChangeDate DESC","Audit par user + date (v1.22.4)"],
+        ["Mots","PK__Mots__…","CLUSTERED","Oui","Id","Auto PK"],
+        ["Orthophoniste","PK__Orthopho__…","CLUSTERED","Oui","Id","Auto PK"],
+        ["Orthophoniste_Mots","PK_Orthophoniste_Mots","CLUSTERED","Oui","OrthophonisteId, MotId","PK composite"],
+        ["Orthophoniste_Mots","IX_OrthophonisteMots_MotId","NONCLUSTERED","Non","MotId","Lookup inverse par mot (v1.22.4)"],
+        ["SiteButtons","PK__SiteButt__…","CLUSTERED","Oui","id","Auto PK"],
     ]
-    story.append(tbl(rows, [4.0*cm, 4.5*cm, 2.8*cm, 1.5*cm, 4.2*cm]))
+    story.append(tbl(rows, [3.8*cm, 4.5*cm, 2.5*cm, 1.2*cm, 3.5*cm, 2.5*cm]))
 
     # ── 5. Triggers ───────────────────────────────────────────────────────────
     story.append(PageBreak())
@@ -712,19 +721,37 @@ def build():
     story.append(info_tbl([
         ["Hôte",      "mac-mini-de-christophe.tailbf2a66.ts.net : 1433"],
         ["Base",      "WEB_NATHANAEL"],
-        ["User",      "sa (via variable d'env DB_USER)"],
+        ["Login API", "web_nathanael_app (droits limités, v1.22.4) — voir sql/02_permissions.sql"],
+        ["Login DBA", "sa (administration uniquement, jamais utilisé par l'app)"],
         ["Encrypt",   "false — réseau privé Tailscale uniquement"],
         ["TrustCert", "true"],
         ["Pool",      "ConnectionPool mssql — partagé par toutes les requêtes API"],
         ["Transactions","Utilisées pour import CSV, MERGE SiteButtons, renumérotation IDENTITY"],
+        ["Backup",    "Script sql/03_backup.sql — cron 2h00 recommandé"],
     ]))
     story.append(Spacer(1, 0.3*cm))
+
+    story += sec("9.1  Droits du login web_nathanael_app", level=2)
+    rows = [
+        ["Table","SELECT","INSERT","UPDATE","DELETE","Raison"],
+        ["Utilisateurs","✓","✓","✓","✗","Pas de suppression dans l'app"],
+        ["HistoriqueUtilisateurs","✓","✗","✗","✗","Inserts faits par trigger uniquement"],
+        ["Orthophoniste","✓","✓","✓","✓","CRUD séances complet"],
+        ["Orthophoniste_Mots","✓","✓","✗","✓","Liaison séance ↔ mot"],
+        ["Mots","✓","✓","✗","✗","Dédupliqués côté API"],
+        ["SiteButtons","✓","✓","✓","✗","MERGE (INSERT+UPDATE)"],
+    ]
+    story.append(tbl(rows, [4.0*cm, 1.5*cm, 1.5*cm, 1.8*cm, 1.8*cm, 7.4*cm]))
+    story.append(Spacer(1, 0.2*cm))
+
+    story += sec("9.2  Autres mesures de sécurité", level=2)
     for item in [
         "Toutes les requêtes utilisent des <b>paramètres nommés</b> .input() — protection SQL injection",
         "Le champ PasswordHash n'est jamais renvoyé au client (destructuring côté API)",
         "SQL Server non exposé sur Internet — accessible uniquement via réseau Tailscale",
         "Mots de passe hashés bcrypt salt factor 10",
         "Comptes bloqués (MotDePasseIsActive=0) tant que le mot de passe n'est pas défini",
+        "Principe du moindre privilège : l'app ne peut ni DROP TABLE, ni accéder à master",
     ]:
         story.append(bul(item))
 
