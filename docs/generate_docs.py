@@ -38,7 +38,9 @@ MARGIN = 2 * cm
 # ─── Métadonnées communes ──────────────────────────────────────────────────────
 AUTHOR        = "Christophe Lambert"
 DATE_CREATION = "2026-05-05"
-DATE_MODIF    = "2026-05-06"
+DATE_MODIF    = "2026-05-07"
+VERSION       = "v 1.22.7"
+VERSION_LABEL = "1.22.7"
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -250,11 +252,11 @@ def api_table(rows, col_widths=None):
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def build_site_doc():
-    path = "/Users/kurisu/Documents/Visual Code/docs/DOC_SITE_v1.22.7.pdf"
+    path = f"/Users/kurisu/Documents/Visual Code/docs/DOC_SITE_v{VERSION_LABEL}.pdf"
     doc  = make_doc(path,
                     "Board de Nathanaël — Documentation Site",
                     "Documentation technique et fonctionnelle — Front-end",
-                    "v 1.22.7")
+                    VERSION)
 
     S = STYLES
     story = []
@@ -266,7 +268,7 @@ def build_site_doc():
     story.append(info_table([
         ["Projet",    "Board de Nathanaël"],
         ["Type",      "Application web mono-page (SPA statique)"],
-        ["Version",   "1.22.6"],
+        ["Version",   VERSION_LABEL],
         ["URL",       "https://board.kurisu-no-okoku.com"],
         ["Technos",   "HTML5 · CSS3 · JavaScript vanilla"],
         ["Date doc.", DATE_CREATION],
@@ -448,11 +450,11 @@ def build_site_doc():
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def build_api_doc():
-    path = "/Users/kurisu/Documents/Visual Code/docs/DOC_API_v1.22.7.pdf"
+    path = f"/Users/kurisu/Documents/Visual Code/docs/DOC_API_v{VERSION_LABEL}.pdf"
     doc  = make_doc(path,
                     "Board de Nathanaël — Documentation API",
                     "Documentation technique — Back-end Node.js / Express",
-                    "v 1.22.7")
+                    VERSION)
 
     S = STYLES
     story = []
@@ -464,7 +466,7 @@ def build_api_doc():
         ["Projet",      "Board de Nathanaël"],
         ["Runtime",     "Node.js 18 (LTS)"],
         ["Framework",   "Express 4.x"],
-        ["Version API", "1.22.7"],
+        ["Version API", VERSION_LABEL],
         ["Port",        "3000"],
         ["Base URL",    "https://board.kurisu-no-okoku.com"],
         ["Date création", DATE_CREATION],

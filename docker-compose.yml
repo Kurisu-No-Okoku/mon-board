@@ -14,6 +14,8 @@ services:
       DB_PORT: "1433"
       EMAIL_PASSWORD: "hqiqxpoejnjkqunz"
       PUBLIC_URL: "https://board.kurisu-no-okoku.com"
+    volumes:
+      - ./docs:/app/docs
     restart: unless-stopped
     networks:
       - web-nathanael-network
