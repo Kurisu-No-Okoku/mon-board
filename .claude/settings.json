@@ -3,7 +3,12 @@
     "allow": [
       "Bash(node -e ' *)",
       "Bash(python3 docs/generate_docs.py api)",
-      "Bash(python3 docs/generate_dba_guide.py)"
+      "Bash(python3 docs/generate_dba_guide.py)",
+      "Bash(python3 generate_docs.py)",
+      "Bash(python3 generate_bdd_full.py)",
+      "Bash(git add *)",
+      "Bash(git rm *)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }
