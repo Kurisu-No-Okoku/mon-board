@@ -38,7 +38,7 @@ MARGIN = 2 * cm
 # ─── Métadonnées communes ──────────────────────────────────────────────────────
 AUTHOR        = "Kurisu-No-Okoku"
 DATE_CREATION = "2026-05-05"
-DATE_MODIF    = "2026-05-05"
+DATE_MODIF    = "2026-05-06"
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -414,11 +414,11 @@ def build_site_doc():
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def build_api_doc():
-    path = "/Users/kurisu/Documents/Visual Code/docs/DOC_API_v1.22.1.pdf"
+    path = "/Users/kurisu/Documents/Visual Code/docs/DOC_API_v1.22.3.pdf"
     doc  = make_doc(path,
                     "Board de Nathanaël — Documentation API",
                     "Documentation technique — Back-end Node.js / Express",
-                    "v 1.22.1")
+                    "v 1.22.3")
 
     S = STYLES
     story = []
@@ -430,10 +430,11 @@ def build_api_doc():
         ["Projet",      "Board de Nathanaël"],
         ["Runtime",     "Node.js 18 (LTS)"],
         ["Framework",   "Express 4.x"],
-        ["Version API", "1.22.1"],
+        ["Version API", "1.22.3"],
         ["Port",        "3000"],
         ["Base URL",    "https://board.kurisu-no-okoku.com"],
-        ["Date doc.",   DATE_CREATION],
+        ["Date création", DATE_CREATION],
+        ["Date modif.",   "2026-05-06"],
     ]))
     story.append(Spacer(1, 0.5 * cm))
 
@@ -567,14 +568,35 @@ def build_api_doc():
     story += section_header("6. Service e-mail (Nodemailer)")
     story.append(Paragraph(
         "Transport SMTP via <b>Gmail</b> avec mot de passe d'application (App Password). "
-        "Trois scénarios d'envoi :",
+        "Quatre scénarios d'envoi :",
         S['Body']))
     for item in [
         "<b>Activation de compte</b> — notification admin + confirmation utilisateur",
         "<b>Réinitialisation MDP</b> — lien vers reset-password.html?login=…",
         "<b>Relance automatique</b> — job toutes les 24h pour les utilisateurs MustResetPassword=1",
+        "<b>Promotion Admin</b> — email automatique lors du passage Role User → Admin (v1.22.3)",
     ]:
         story.append(bullet(item))
+
+    # ── 6b. Jobs de fond ──────────────────────────────────────────────────────
+    story += section_header("6.1 Tâches de fond (background jobs)", level=2)
+    rows = [
+        ["Job", "Intervalle", "Rôle", "v"],
+        ["Relance MustResetPassword", "24h", "Envoie un e-mail de relance aux utilisateurs avec MustResetPassword=1", "1.22.0"],
+        ["Notification promotion Admin", "2 min", "Détecte RoleNotifPending=1 (posé par trigger BDD), envoie l'e-mail délog/relog, remet le flag à 0", "1.22.3"],
+    ]
+    t = Table(rows, colWidths=[4.5*cm, 1.8*cm, 8.5*cm, 1.5*cm])
+    t.setStyle(TableStyle([
+        ('BACKGROUND',  (0,0), (-1,0), TABLE_HEADER),
+        ('TEXTCOLOR',   (0,0), (-1,0), WHITE),
+        ('FONTNAME',    (0,0), (-1,0), 'Helvetica-Bold'),
+        ('FONTSIZE',    (0,0), (-1,-1), 8.5),
+        ('ROWBACKGROUNDS', (0,1), (-1,-1), [WHITE, TABLE_ROW_ALT]),
+        ('GRID',        (0,0), (-1,-1), 0.4, TABLE_BORDER),
+        ('VALIGN',      (0,0), (-1,-1), 'TOP'),
+        ('PADDING',     (0,0), (-1,-1), 5),
+    ]))
+    story.append(t)
 
     # ── 7. Import CSV ────────────────────────────────────────────────────────
     story += section_header("7. Import CSV (POST /api/import-csv)")
@@ -715,11 +737,11 @@ def db_schema_diagram():
 
 
 def build_db_doc():
-    path = "/Users/kurisu/Documents/Visual Code/docs/DOC_BDD_v1.22.1.pdf"
+    path = "/Users/kurisu/Documents/Visual Code/docs/DOC_BDD_v1.22.2.pdf"
     doc  = make_doc(path,
                     "Board de Nathanaël — Documentation Base de Données",
                     "Documentation technique — SQL Server WEB_NATHANAEL",
-                    "v 1.22.1")
+                    "v 1.22.2")
 
     S = STYLES
     story = []
@@ -729,12 +751,13 @@ def build_db_doc():
     story.append(HRFlowable(width='100%', thickness=2, color=HEADER_BLUE, spaceAfter=8))
     story.append(info_table([
         ["Projet",          "Board de Nathanaël"],
-        ["SGBD",            "Microsoft SQL Server (MSSQL)"],
+        ["SGBD",            "Azure SQL Edge Developer 15.0.2000 (ARM64)"],
         ["Base",            "WEB_NATHANAEL"],
         ["Schéma",          "dbo"],
         ["Serveur",         "mac-mini-de-christophe.tailbf2a66.ts.net:1433"],
         ["Driver Node.js",  "mssql ^9.2.1 (tedious)"],
-        ["Date doc.",       DATE_CREATION],
+        ["Date création",   DATE_CREATION],
+        ["Date modif.",     "2026-05-05"],
     ]))
     story.append(Spacer(1, 0.5 * cm))
 
@@ -939,6 +962,126 @@ def build_db_doc():
     ]:
         story.append(bullet(item))
 
+    # ── 6. Maintenance IDENTITY (v1.22.2) ────────────────────────────────────
+    story += section_header("6. Maintenance — Correction des colonnes IDENTITY (2026-05-05)")
+
+    # Badge warning
+    warn_rows = [["Contexte"]]
+    warn_t = Table([["  Correction appliquée le 2026-05-05 — v1.22.2"]],
+                   colWidths=[15.5*cm])
+    warn_t.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#FFF3CD')),
+        ('TEXTCOLOR',  (0,0), (-1,-1), colors.HexColor('#856404')),
+        ('FONTNAME',   (0,0), (-1,-1), 'Helvetica-Bold'),
+        ('FONTSIZE',   (0,0), (-1,-1), 9),
+        ('PADDING',    (0,0), (-1,-1), 8),
+        ('GRID',       (0,0), (-1,-1), 0.5, colors.HexColor('#FFEEBA')),
+    ]))
+    story.append(warn_t)
+    story.append(Spacer(1, 0.3*cm))
+
+    story += section_header("6.1 Problème constaté", level=2)
+    story.append(Paragraph(
+        "Deux anomalies IDENTITY détectées suite à des redémarrages passés du conteneur <b>sql_server_m4</b>. "
+        "Azure SQL Edge perd le cache d'identité au redémarrage et reprend à <i>dernière_valeur_cache + 1</i>, "
+        "créant des gaps de ~1000 entre les IDs. "
+        "<b>Utilisateurs</b> présentait un gap 6 → 1005 (UserID 1005 existant réel). "
+        "<b>Mots</b> avait un last_value de 1027 alors que le MAX réel était 29.",
+        S['Body']))
+
+    rows = [
+        ["Table",           "last_value avant", "MAX(id) réel", "Action"],
+        ["Utilisateurs",    "1005",              "7 (après renumérotation)", "UserID 1005 → 7 + RESEED 7"],
+        ["Mots",            "1027",              "29",            "RESEED → corrigé à 29"],
+        ["Orthophoniste",   "38",                "38",            "Aucune — déjà aligné"],
+    ]
+    t = Table(rows, colWidths=[4.5*cm, 3.5*cm, 3.5*cm, 4.0*cm])
+    t.setStyle(TableStyle([
+        ('BACKGROUND',  (0, 0), (-1, 0), TABLE_HEADER),
+        ('TEXTCOLOR',   (0, 0), (-1, 0), WHITE),
+        ('FONTNAME',    (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE',    (0, 0), (-1, -1), 9),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [WHITE, TABLE_ROW_ALT]),
+        ('GRID',        (0, 0), (-1, -1), 0.5, TABLE_BORDER),
+        ('BACKGROUND',  (3, 2), (3, 2), colors.HexColor('#FDECEA')),
+        ('TEXTCOLOR',   (3, 2), (3, 2), DANGER),
+        ('FONTNAME',    (3, 2), (3, 2), 'Helvetica-Bold'),
+        ('PADDING',     (0, 0), (-1, -1), 6),
+    ]))
+    story.append(t)
+    story.append(Spacer(1, 0.3*cm))
+
+    story += section_header("6.2 Correction appliquée", level=2)
+    story.append(Paragraph(
+        "Deux corrections effectuées :",
+        S['Body']))
+    for item in [
+        "<b>Utilisateurs</b> — UserID 1005 renuméroté en 7 via DELETE + INSERT IDENTITY_INSERT ON, puis RESEED à 7",
+        "<b>Mots</b> — RESEED explicite de 1027 à 29 (valeur MAX réelle)",
+        "<b>Orthophoniste</b> — déjà aligné, aucune action",
+    ]:
+        story.append(bullet(item))
+    story.append(Paragraph(
+        "-- Utilisateurs : renumérotation UserID 1005 → 7<br/>"
+        "DELETE FROM [dbo].[Utilisateurs] WHERE UserID = 1005;<br/>"
+        "SET IDENTITY_INSERT [dbo].[Utilisateurs] ON;<br/>"
+        "INSERT INTO [dbo].[Utilisateurs] (UserID, Username, ...) VALUES (7, ...);<br/>"
+        "SET IDENTITY_INSERT [dbo].[Utilisateurs] OFF;<br/>"
+        "DBCC CHECKIDENT ('[dbo].[Utilisateurs]', RESEED, 7);<br/><br/>"
+        "-- Mots : reseed uniquement<br/>"
+        "DBCC CHECKIDENT ('[dbo].[Mots]', RESEED, 29);",
+        S['CodeBlock']))
+
+    story += section_header("6.3 Limitation Azure SQL Edge", level=2)
+    story.append(Paragraph(
+        "La commande <code>ALTER DATABASE SET IDENTITY_CACHE OFF</code> disponible sur "
+        "SQL Server 2017+ <b>n'est pas supportée</b> sur Azure SQL Edge (édition embarquée ARM64). "
+        "En conséquence, <b>les sauts peuvent se reproduire à chaque redémarrage du conteneur</b>.",
+        S['Body']))
+
+    story += section_header("6.4 Procédure de maintenance à répéter après redémarrage", level=2)
+    story.append(Paragraph(
+        "Après tout redémarrage de <b>sql_server_m4</b>, exécuter les commandes suivantes "
+        "via SSMS ou le script Node.js de maintenance :",
+        S['Body']))
+    story.append(Paragraph(
+        "-- Vérifier les écarts<br/>"
+        "SELECT OBJECT_NAME(OBJECT_ID) AS Tbl, last_value FROM sys.identity_columns<br/>"
+        "WHERE OBJECT_NAME(OBJECT_ID) IN ('Utilisateurs','Mots','Orthophoniste');<br/><br/>"
+        "-- Corriger si last_value > MAX réel<br/>"
+        "DECLARE @maxU INT = (SELECT MAX(UserID) FROM Utilisateurs);<br/>"
+        "DECLARE @maxM INT = (SELECT MAX(Id) FROM Mots);<br/>"
+        "DECLARE @maxO INT = (SELECT MAX(Id) FROM Orthophoniste);<br/>"
+        "EXEC('DBCC CHECKIDENT (''[dbo].[Utilisateurs]'',  RESEED, ' + @maxU + ')');<br/>"
+        "EXEC('DBCC CHECKIDENT (''[dbo].[Mots]'',          RESEED, ' + @maxM + ')');<br/>"
+        "EXEC('DBCC CHECKIDENT (''[dbo].[Orthophoniste]'', RESEED, ' + @maxO + ')');",
+        S['CodeBlock']))
+
+    rows_etat = [
+        ["Table",           "last_value après", "MAX(id) réel", "Statut"],
+        ["Utilisateurs",    "7",                 "7",            "Corrigé (était 1005)"],
+        ["Mots",            "29",                "29",           "Corrigé (était 1027)"],
+        ["Orthophoniste",   "38",                "38",           "Aligné (inchangé)"],
+    ]
+    t2 = Table(rows_etat, colWidths=[4.5*cm, 3.5*cm, 3.5*cm, 4.0*cm])
+    t2.setStyle(TableStyle([
+        ('BACKGROUND',  (0, 0), (-1, 0), TABLE_HEADER),
+        ('TEXTCOLOR',   (0, 0), (-1, 0), WHITE),
+        ('FONTNAME',    (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE',    (0, 0), (-1, -1), 9),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [WHITE, TABLE_ROW_ALT]),
+        ('GRID',        (0, 0), (-1, -1), 0.5, TABLE_BORDER),
+        ('BACKGROUND',  (3, 1), (3, 2), colors.HexColor('#D4EDDA')),
+        ('TEXTCOLOR',   (3, 1), (3, 2), SUCCESS),
+        ('FONTNAME',    (3, 1), (3, 2), 'Helvetica-Bold'),
+        ('BACKGROUND',  (3, 3), (3, 3), colors.HexColor('#EAF0F8')),
+        ('TEXTCOLOR',   (3, 3), (3, 3), TEXT_MED),
+        ('PADDING',     (0, 0), (-1, -1), 6),
+    ]))
+    story.append(Spacer(1, 0.2*cm))
+    story.append(Paragraph("État après correction :", S['BodyBold']))
+    story.append(t2)
+
     doc.build(story, onFirstPage=header_footer, onLaterPages=header_footer)
     print(f"  [OK] {path}")
 
@@ -948,8 +1091,13 @@ def build_db_doc():
 # ═══════════════════════════════════════════════════════════════════════════════
 
 if __name__ == '__main__':
+    import sys
+    target = sys.argv[1] if len(sys.argv) > 1 else 'all'
     print("Génération des documents...")
-    build_site_doc()
-    build_api_doc()
-    build_db_doc()
+    if target in ('all', 'site'):
+        build_site_doc()
+    if target in ('all', 'api'):
+        build_api_doc()
+    if target in ('all', 'bdd'):
+        build_db_doc()
     print("Terminé.")

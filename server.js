@@ -8,7 +8,7 @@ const bcrypt = require('bcrypt');
 const app = express();
 const port = process.env.PORT || 3000;
 const publicHost = process.env.PUBLIC_URL || `http://100.99.13.22:${port}`;
-const apiVersion = '1.22.1';
+const apiVersion = '1.22.3';
 
 // FIX: suppression de la référence à `host` qui n'était pas défini (ReferenceError)
 const dbConfig = {
@@ -726,6 +726,41 @@ app.get('/api/export-csv', authMiddleware, async (req, res) => {
     res.status(500).json({ error: "Erreur lors de l'export CSV." });
   }
 });
+
+// Tâche de fond : notifications de promotion Admin (toutes les 2 minutes)
+setInterval(async () => {
+  try {
+    await poolConnect;
+    const result = await pool.request()
+      .query("SELECT UserID, Username, Email FROM Utilisateurs WHERE RoleNotifPending = 1 AND Role = 'Admin'");
+
+    for (const user of result.recordset) {
+      const mailOptions = {
+        from: '"administrateur" <oldvivaldi@gmail.com>',
+        to: user.Email,
+        subject: 'Votre compte Nathanaël — Vous êtes désormais Administrateur',
+        html: `
+          <h3>Bonjour ${user.Username},</h3>
+          <p>Votre compte a été promu au rôle <strong>Administrateur</strong> sur le Board de Nathanaël.</p>
+          <p>Pour que ce changement prenne effet, veuillez vous <strong>déconnecter puis vous reconnecter</strong> à votre session.</p>
+          <p style="margin-top:20px;">
+            <a href="${publicHost}" style="background-color:#007bff;color:white;padding:12px 24px;text-decoration:none;border-radius:8px;display:inline-block;font-weight:bold;">
+              Accéder au Board
+            </a>
+          </p>
+          <p>Cordialement,<br>L'équipe de Nathanaël.</p>
+        `
+      };
+      await transporter.sendMail(mailOptions);
+      await pool.request()
+        .input('uid', sql.Int, user.UserID)
+        .query('UPDATE Utilisateurs SET RoleNotifPending = 0 WHERE UserID = @uid');
+      console.log(`[RoleNotif] Mail Admin envoyé à : ${user.Username}`);
+    }
+  } catch (err) {
+    console.error('[RoleNotif] Erreur job notification Admin:', err.message);
+  }
+}, 2 * 60 * 1000);
 
 // Tâche de fond : relance toutes les 24h (au lieu de 1h) pour éviter le spam
 setInterval(async () => {
