@@ -152,7 +152,7 @@ def header_footer(canvas, doc):
 
     canvas.setFont('Helvetica', 8)
     canvas.setFillColor(colors.HexColor('#A0C4FF'))
-    canvas.drawCentredString(W / 2, H - 1.9 * cm, doc._page_subtitle)
+    canvas.drawCentredString(W / 2, H - 2.35 * cm, doc._page_subtitle)
 
     # Badge version (coin droit)
     badge_w, badge_h = 2.8 * cm, 0.6 * cm
@@ -254,7 +254,7 @@ def build_site_doc():
     doc  = make_doc(path,
                     "Board de Nathanaël — Documentation Site",
                     "Documentation technique et fonctionnelle — Front-end",
-                    "v 1.22.6")
+                    "v 1.22.7")
 
     S = STYLES
     story = []

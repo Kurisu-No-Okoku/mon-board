@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Guide pratique DBA — WEB_NATHANAEL v1.22.4"""
+"""Guide pratique DBA — WEB_NATHANAEL v1.22.5"""
 
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
@@ -81,7 +81,7 @@ def hf(canvas, doc):
     canvas.setFont('Helvetica-Bold', 12); canvas.setFillColor(WHITE)
     canvas.drawCentredString(W/2, H-1.15*cm, doc._title)
     canvas.setFont('Helvetica', 8); canvas.setFillColor(colors.HexColor('#A0C4FF'))
-    canvas.drawCentredString(W/2, H-1.8*cm, doc._sub)
+    canvas.drawCentredString(W/2, H-2.2*cm, doc._sub)
     bw, bh = 2.6*cm, 0.58*cm
     bx = W-M-bw; by = H-1.6*cm
     canvas.setFillColor(H_DARK); canvas.roundRect(bx, by, bw, bh, 4, fill=1, stroke=0)
