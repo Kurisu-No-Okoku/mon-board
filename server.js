@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs');
 const crypto = require('crypto');
 const express = require('express');
 const sql = require('mssql');
@@ -8,7 +9,7 @@ const bcrypt = require('bcrypt');
 const app = express();
 const port = process.env.PORT || 3000;
 const publicHost = process.env.PUBLIC_URL || `http://100.99.13.22:${port}`;
-const apiVersion = '1.22.3';
+const apiVersion = '1.22.7';
 
 // FIX: suppression de la référence à `host` qui n'était pas défini (ReferenceError)
 const dbConfig = {
@@ -443,6 +444,20 @@ app.post('/api/users/toggle-active', adminMiddleware, async (req, res) => {
 });
 
 // Protégé admin
+app.get('/api/docs/site', adminMiddleware, (req, res) => {
+  const docsDir = path.join(__dirname, 'docs');
+  try {
+    const files = fs.readdirSync(docsDir)
+      .filter(f => f.startsWith('DOC_SITE_') && f.endsWith('.pdf'))
+      .sort()
+      .reverse();
+    if (files.length === 0) return res.status(404).json({ error: 'Document non trouvé.' });
+    res.download(path.join(docsDir, files[0]), files[0]);
+  } catch (err) {
+    res.status(500).json({ error: 'Erreur lors de la récupération du document.' });
+  }
+});
+
 app.post('/api/request-reset', adminMiddleware, async (req, res) => {
   const { login } = req.body;
 

@@ -344,6 +344,11 @@
       .btn-resend:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15); }
       .btn-resend:disabled { opacity: 0.5; cursor: not-allowed; }
 
+      .user-item-actions {
+        display: flex;
+        gap: 8px;
+      }
+
       .data-table {
         width: 100%;
         border-collapse: collapse;
@@ -1024,6 +1029,36 @@
           font-size: 0.78rem;
           padding: 10px 14px;
         }
+
+        /* Modal — bottom sheet sur mobile */
+        .modal-content {
+          margin: 0;
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          width: 100%;
+          max-width: 100%;
+          max-height: 90vh;
+          border-radius: 20px 20px 0 0;
+        }
+
+        /* User-item — info au dessus, boutons pleine largeur dessous */
+        .user-item {
+          flex-wrap: wrap;
+        }
+        .user-item > div:first-child {
+          flex: 1 1 100%;
+        }
+        .user-item-actions {
+          flex: 1 1 100%;
+        }
+        .user-item-actions .btn-resend {
+          flex: 1;
+          padding: 10px 12px;
+          font-size: 0.85rem;
+          text-align: center;
+        }
       }
     </style>
   </head>
@@ -1096,6 +1131,48 @@
             <h2 style="margin-bottom: 20px;">📢 Notes de version</h2>
 
             <!-- Dernière release — toujours visible -->
+            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 24px;">
+              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.22.7 - Compte : démasquage e-mail à la demande</h3>
+              <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 6 Mai 2026</p>
+              <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
+                <li><b>UX (Compte) :</b> Le bouton 👁 permet d'afficher temporairement son e-mail complet dans la section « Mon Compte » — cliquer à nouveau le remasque (🙈). Les e-mails des autres utilisateurs restent masqués en permanence pour l'Admin.</li>
+              </ul>
+            </div>
+
+            <!-- v1.22.6 -->
+            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 24px;">
+              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.22.6 - Admin : masquage RGPD des e-mails &amp; UX bouton documentation</h3>
+              <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 6 Mai 2026</p>
+              <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
+                <li><b>RGPD (Admin) :</b> Les adresses e-mail des utilisateurs sont masquées dans le panneau d'administration — seuls les 2 premiers caractères et le TLD sont visibles (ex. <code>ol***@g***.com</code>).</li>
+                <li><b>UX (Admin) :</b> Le bouton de téléchargement du Guide du Site est déplacé en haut du panneau, avant la liste des utilisateurs.</li>
+              </ul>
+            </div>
+
+            <!-- v1.22.5 -->
+            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 24px;">
+              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.22.5 - Admin : dénomination correcte des états MDP &amp; téléchargement Guide</h3>
+              <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 6 Mai 2026</p>
+              <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
+                <li><b>UX (Admin) :</b> Boutons renommés pour refléter l'<b>état actuel</b> du compte — <b>🔓 Sans MDP</b> (accès sans mot de passe actif : Admin peut se connecter directement, User bloqué) / <b>🔒 MDP exigé</b> (mot de passe obligatoire pour tous).</li>
+                <li><b>UX (Admin) :</b> Légende mise à jour avec les définitions exactes des deux états et leur impact selon le rôle (Admin / User).</li>
+                <li><b>Admin :</b> Nouveau bouton « Télécharger le Guide du Site (PDF) » dans la section Documentation du panneau Admin — appel sécurisé à <code>GET /api/docs/site</code> (admin uniquement).</li>
+                <li><b>API :</b> Nouveau endpoint <code>GET /api/docs/site</code> — renvoie la dernière version du fichier <code>DOC_SITE_*.pdf</code> (accès admin requis).</li>
+              </ul>
+            </div>
+
+            <!-- v1.22.4 -->
+            <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 24px;">
+              <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.22.4 - UX Admin : modale mobile &amp; boutons clarifiés</h3>
+              <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 6 Mai 2026</p>
+              <ul style="margin: 0; padding-left: 20px; color: var(--panel-text-color); line-height: 1.6;">
+                <li><b>UX (Admin — Mobile) :</b> La modale d'administration s'affiche en bottom sheet sur mobile (≤ 520 px) — remonte du bas, bords arrondis, hauteur 90 vh.</li>
+                <li><b>UX (Admin — Mobile) :</b> Chaque ligne utilisateur passe en disposition verticale sur petits écrans : infos en haut, boutons pleine largeur en dessous.</li>
+                <li><b>UX (Admin) :</b> Boutons renommés pour plus de clarté — <b>Réinit. MDP</b> (envoi email reset), légende explicative ajoutée.</li>
+              </ul>
+            </div>
+
+            <!-- v1.22.2 -->
             <div class="release-item" style="border-left: 4px solid var(--accent); padding-left: 20px; margin-bottom: 24px;">
               <h3 style="margin: 0; color: var(--accent); font-size: 1.3rem;">v1.22.2 - Fix Orthophoniste : en-tête sticky persistant après re-render</h3>
               <p style="margin: 4px 0 12px 0; font-size: 0.85rem; color: var(--subtext-color);">Publié le 4 Mai 2026</p>
@@ -1452,7 +1529,7 @@
           </div>
         </div>
 
-        <div id="content-panel">
+        <div id="content-panel">tes
           <h2 id="category-title" style="margin: 0 0 8px;">Orthophoniste</h2>
           <p id="category-description">Choisissez une option pour l'orthophoniste.</p>
 
@@ -1558,7 +1635,7 @@
       </div>
 
     <footer class="page-footer">
-      <p>© 2026 Christophe Lambert • Site v1.22.2 • API <span id="api-version">...</span></p>
+      <p>© 2026 Christophe Lambert • Site v1.22.7 • API <span id="api-version">...</span></p>
     </footer>
 
     <div id="toast-container" aria-live="polite" aria-atomic="false"></div>
@@ -1748,7 +1825,10 @@
         let personalInfoHtml = `
           <div style="text-align: left; padding: 10px 0;">
             <p><strong>Utilisateur :</strong> ${escapeHtml(username)}</p>
-            <p><strong>E-mail :</strong> ${escapeHtml(email || "Connectez-vous à nouveau pour voir l'e-mail")}</p>
+            <p><strong>E-mail :</strong>
+              <span id="account-email-display" data-masked="true">${escapeHtml(email ? maskEmail(email) : "Connectez-vous à nouveau pour voir l'e-mail")}</span>${email ? `
+              <button id="btn-toggle-email" onclick="toggleEmailMask()" title="Afficher l'e-mail complet" style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:1rem;margin-left:6px;vertical-align:middle;padding:0;">👁</button>` : ''}
+            </p>
             <p><strong>Rôle :</strong> ${escapeHtml(role || 'Utilisateur')}</p>
             <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--panel-border);">
         `;
@@ -1756,6 +1836,9 @@
         if (role === 'Admin') {
           modalTitle.textContent = 'Administration & Compte';
           usersListContainer.innerHTML = personalInfoHtml + `
+            <h3 style="margin-top: 0;">Documentation</h3>
+            <button class="btn-resend" onclick="downloadDocSite(this)" style="width: 100%; margin-bottom: 16px;">📄 Télécharger le Guide du Site (PDF)</button>
+            <hr style="margin: 20px 0; border: 0; border-top: 1px solid var(--panel-border);">
             <h3>Gestion des Utilisateurs</h3>
             <div id="admin-users-list-target">Chargement...</div>
           </div>`;
@@ -1787,6 +1870,33 @@
         if (nouveauModal.style.display === 'block') nouveauModal.style.display = 'none';
       });
 
+      const maskEmail = (email) => {
+        if (!email || !email.includes('@')) return '***';
+        const [local, domain] = email.split('@');
+        const dotIdx = domain.lastIndexOf('.');
+        const domainName = dotIdx > 0 ? domain.slice(0, dotIdx) : domain;
+        const tld = dotIdx > 0 ? domain.slice(dotIdx) : '';
+        return `${local.slice(0, 2)}***@${domainName.slice(0, 1)}***${tld}`;
+      };
+
+      window.toggleEmailMask = () => {
+        const el = document.getElementById('account-email-display');
+        const btn = document.getElementById('btn-toggle-email');
+        if (!el) return;
+        const fullEmail = localStorage.getItem('currentEmail') || '';
+        if (el.dataset.masked === 'true') {
+          el.textContent = fullEmail;
+          el.dataset.masked = 'false';
+          btn.textContent = '🙈';
+          btn.title = 'Masquer l\'e-mail';
+        } else {
+          el.textContent = maskEmail(fullEmail);
+          el.dataset.masked = 'true';
+          btn.textContent = '👁';
+          btn.title = 'Afficher l\'e-mail complet';
+        }
+      };
+
       const loadUsers = async () => {
         const target = document.getElementById('admin-users-list-target');
         if (!target) return;
@@ -1800,21 +1910,29 @@
           const users = await response.json();
 
           // FIX: escapeHtml + data-attributes pour éviter le XSS stocké (injection via noms d'utilisateurs)
-          target.innerHTML = users.map(user => `
+          const legend = `
+            <div style="background:var(--button-bg);border:1px solid var(--panel-border);border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:0.82rem;color:var(--subtext-color);line-height:1.8;">
+              <strong style="color:var(--text-color);display:block;margin-bottom:4px;">Actions disponibles :</strong>
+              🔑 <strong>Réinit. MDP</strong> — Envoie un lien de réinitialisation de mot de passe par e-mail à l'utilisateur.<br>
+              🔓 <strong>Sans MDP</strong> — État actuel : accès sans mot de passe. Un compte Admin peut se connecter directement (accès d'urgence). Un compte User est bloqué en attente. Cliquer exigera un MDP.<br>
+              🔒 <strong>MDP exigé</strong> — État actuel : mot de passe obligatoire pour se connecter. Cliquer passera le compte en accès sans MDP.
+            </div>`;
+
+          target.innerHTML = legend + users.map(user => `
             <div class="user-item">
               <div>
                 <strong style="color: ${user.MotDePasseIsActive ? 'inherit' : '#94a2b6'}">${escapeHtml(user.Username)}</strong><br>
                 <small style="color: var(--subtext-color)">
-                  ${escapeHtml(user.Email)} •
+                  ${escapeHtml(maskEmail(user.Email))} •
                   <span style="color: ${user.MustResetPassword ? '#fbbf24' : '#10b981'}">
                     ${user.MustResetPassword ? '⏳ Reset requis' : '✅ Prêt'}
                   </span>
                 </small>
               </div>
-              <div style="display: flex; gap: 8px;">
-                <button class="btn-resend" data-login="${escapeHtml(user.Username)}" onclick="resendReset(this.dataset.login, this)" title="Renvoyer le mail de reset">Relancer</button>
-                <button class="btn-resend" style="background-color: ${user.MotDePasseIsActive ? '#dc2626' : '#16a34a'}" data-login="${escapeHtml(user.Username)}" data-active="${!user.MotDePasseIsActive}" onclick="toggleUserActive(this.dataset.login, this.dataset.active === 'true', this)">
-                  ${user.MotDePasseIsActive ? 'Désactiver' : 'Activer'}
+              <div class="user-item-actions">
+                <button class="btn-resend" data-login="${escapeHtml(user.Username)}" onclick="resendReset(this.dataset.login, this)" title="Envoie un email de réinitialisation du mot de passe">🔑 Réinit. MDP</button>
+                <button class="btn-resend" style="background-color: ${user.MotDePasseIsActive ? '#b45309' : '#16a34a'}" data-login="${escapeHtml(user.Username)}" data-active="${!user.MotDePasseIsActive}" onclick="toggleUserActive(this.dataset.login, this.dataset.active === 'true', this)" title="${user.MotDePasseIsActive ? 'Cliquer pour passer en accès sans MDP' : 'Cliquer pour exiger un mot de passe'}">
+                  ${user.MotDePasseIsActive ? '🔒 MDP exigé' : '🔓 Sans MDP'}
                 </button>
               </div>
             </div>
@@ -1837,6 +1955,35 @@
           const result = await response.json();
           showToast(result.message || result.error, response.ok ? 'success' : 'error');
           await loadUsers();
+        } catch (err) {
+          showToast('Erreur réseau', 'error');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = originalText;
+        }
+      };
+
+      window.downloadDocSite = async (btn) => {
+        const originalText = btn.textContent;
+        try {
+          btn.disabled = true;
+          btn.textContent = '⏳ Téléchargement...';
+          const response = await apiFetch(`${API_BASE}/api/docs/site`);
+          if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            showToast(err.error || 'Document non trouvé.', 'error');
+            return;
+          }
+          const blob = await response.blob();
+          const disposition = response.headers.get('Content-Disposition') || '';
+          const match = disposition.match(/filename="?([^"]+)"?/);
+          const filename = match ? match[1] : 'DOC_SITE.pdf';
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = filename;
+          a.click();
+          URL.revokeObjectURL(url);
         } catch (err) {
           showToast('Erreur réseau', 'error');
         } finally {

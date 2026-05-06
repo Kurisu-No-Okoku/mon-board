@@ -36,11 +36,11 @@ FOOTER   = colors.HexColor('#2B5280')
 W, H = A4
 M = 1.8 * cm
 
-AUTHOR       = "Kurisu-No-Okoku"
+AUTHOR       = "Christophe Lambert"
 DATE_CREATE  = "2026-05-05"
 DATE_MODIF   = "2026-05-06"
-VERSION      = "v 1.22.4"
-VERSION_LABEL= "v1.22.4"
+VERSION      = "v 1.22.7"
+VERSION_LABEL= "v1.22.7"
 
 # ── Styles ────────────────────────────────────────────────────────────────────
 def mk_styles():
@@ -271,7 +271,7 @@ def er_diagram():
 # CONTENU
 # ─────────────────────────────────────────────────────────────────────────────
 def build():
-    path = "/Users/kurisu/Documents/Visual Code/docs/DOC_BDD_COMPLETE_v1.22.4.pdf"
+    path = "/Users/kurisu/Documents/Visual Code/docs/DOC_BDD_COMPLETE_v1.22.7.pdf"
     doc  = make_doc(path)
     story = []
 
@@ -300,6 +300,10 @@ def build():
         ["1.22.2",  "2026-05-05", "Correction IDENTITY (Mots 1027→29, UserID 1005→7). Procédure startup usp_ReseedIdentity_WEB_NATHANAEL. Documentation complète."],
         ["1.22.3",  "2026-05-06", "Ajout colonne RoleNotifPending (Utilisateurs). Trigger TRG_RolePromotionNotif (notification email promotion Admin). Fee971 promu Admin."],
         ["1.22.4",  "2026-05-06", "Index NONCLUSTERED : IX_Historique_UserID_ChangeDate, IX_OrthophonisteMots_MotId. Login applicatif web_nathanael_app (principe du moindre privilège). Stratégie backup + plan d'exécution (sql/)."],
+        ["1.22.5",  "2026-05-06", "Auteur : Christophe Lambert. Corrections de mise en page (largeurs de tableaux). Guide DBA reformalisé (langage impersonnel)."],
+        ["1.22.6",  "2026-05-06", "UX Admin (front-end) : modale bottom sheet mobile, boutons renommés (Réinit. MDP / Activer / Bloquer), légende explicative. API v1.22.4."],
+        ["1.22.7",  "2026-05-06", "UX Admin : boutons renommés état courant (🔓 Sans MDP / 🔒 MDP exigé), légende corrigée. Nouveau endpoint GET /api/docs/site. Bouton téléchargement Guide du Site. API v1.22.5."],
+        ["1.22.7",  "2026-05-06", "RGPD : masquage e-mails (ol***@g***.com) + toggle démasquage propre email. Bouton téléchargement Guide déplacé en haut du panneau Admin. API v1.22.7."],
     ]
     story.append(tbl(rows, [2*cm, 2.8*cm, 12.2*cm]))
     story.append(Spacer(1, 0.3*cm))
@@ -477,7 +481,7 @@ def build():
         ["Orthophoniste_Mots","IX_OrthophonisteMots_MotId","NONCLUSTERED","Non","MotId","Lookup inverse par mot (v1.22.4)"],
         ["SiteButtons","PK__SiteButt__…","CLUSTERED","Oui","id","Auto PK"],
     ]
-    story.append(tbl(rows, [3.8*cm, 4.5*cm, 2.5*cm, 1.2*cm, 3.5*cm, 2.5*cm]))
+    story.append(tbl(rows, [3.5*cm, 4.2*cm, 2.5*cm, 1.2*cm, 3.5*cm, 2.5*cm]))
 
     # ── 5. Triggers ───────────────────────────────────────────────────────────
     story.append(PageBreak())
@@ -741,7 +745,7 @@ def build():
         ["Mots","✓","✓","✗","✗","Dédupliqués côté API"],
         ["SiteButtons","✓","✓","✓","✗","MERGE (INSERT+UPDATE)"],
     ]
-    story.append(tbl(rows, [4.0*cm, 1.5*cm, 1.5*cm, 1.8*cm, 1.8*cm, 7.4*cm]))
+    story.append(tbl(rows, [3.8*cm, 1.5*cm, 1.5*cm, 1.8*cm, 1.8*cm, 7.0*cm]))
     story.append(Spacer(1, 0.2*cm))
 
     story += sec("9.2  Autres mesures de sécurité", level=2)

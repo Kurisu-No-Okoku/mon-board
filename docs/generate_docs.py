@@ -36,7 +36,7 @@ W, H = A4
 MARGIN = 2 * cm
 
 # ─── Métadonnées communes ──────────────────────────────────────────────────────
-AUTHOR        = "Kurisu-No-Okoku"
+AUTHOR        = "Christophe Lambert"
 DATE_CREATION = "2026-05-05"
 DATE_MODIF    = "2026-05-06"
 
@@ -228,7 +228,7 @@ def info_table(rows, col_widths=None):
 
 def api_table(rows, col_widths=None):
     if col_widths is None:
-        col_widths = [3.2 * cm, 1.8 * cm, 2.5 * cm, 3.0 * cm, 5.0 * cm]
+        col_widths = [4.5 * cm, 1.8 * cm, 2.5 * cm, 3.0 * cm, 3.7 * cm]
     t = Table(rows, colWidths=col_widths)
     t.setStyle(TableStyle([
         ('BACKGROUND',  (0, 0), (-1, 0), TABLE_HEADER),
@@ -250,11 +250,11 @@ def api_table(rows, col_widths=None):
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def build_site_doc():
-    path = "/Users/kurisu/Documents/Visual Code/docs/DOC_SITE_v1.22.1.pdf"
+    path = "/Users/kurisu/Documents/Visual Code/docs/DOC_SITE_v1.22.7.pdf"
     doc  = make_doc(path,
                     "Board de Nathanaël — Documentation Site",
                     "Documentation technique et fonctionnelle — Front-end",
-                    "v 1.22.1")
+                    "v 1.22.6")
 
     S = STYLES
     story = []
@@ -266,7 +266,7 @@ def build_site_doc():
     story.append(info_table([
         ["Projet",    "Board de Nathanaël"],
         ["Type",      "Application web mono-page (SPA statique)"],
-        ["Version",   "1.22.1"],
+        ["Version",   "1.22.6"],
         ["URL",       "https://board.kurisu-no-okoku.com"],
         ["Technos",   "HTML5 · CSS3 · JavaScript vanilla"],
         ["Date doc.", DATE_CREATION],
@@ -391,8 +391,42 @@ def build_site_doc():
         "Après soumission valide, <code>MotDePasseIsActive</code> est passé à 1 en BDD.",
         S['Body']))
 
-    # ── 10. Déploiement ──────────────────────────────────────────────────────
-    story += section_header("10. Déploiement")
+    # ── 10. Panneau Administration ───────────────────────────────────────────
+    story += section_header("10. Panneau Administration (Admin uniquement)")
+    story.append(Paragraph(
+        "Le panneau Administration est accessible via la modale « Mon Compte » pour les utilisateurs Admin. "
+        "En haut du panneau se trouve le bouton <b>📄 Télécharger le Guide du Site (PDF)</b> "
+        "(appel sécurisé à <code>GET /api/docs/site</code>). "
+        "En dessous, la liste des comptes propose trois actions par utilisateur :",
+        S['Body']))
+    rows = [
+        ["Bouton",         "Action",                                          "Effet sur MotDePasseIsActive"],
+        ["🔑 Réinit. MDP", "Envoie un email de réinitialisation MDP",         "—"],
+        ["🔒 MDP exigé",    "État actuel : mot de passe obligatoire pour se connecter. Cliquer passe le compte en accès sans MDP.", "Passe à 0"],
+        ["🔓 Sans MDP",     "État actuel : accès sans mot de passe. Admin peut se connecter directement (urgence). User est bloqué. Cliquer exige un MDP.", "Passe à 1"],
+    ]
+    t = Table(rows, colWidths=[3.0 * cm, 6.5 * cm, 6.0 * cm])
+    t.setStyle(TableStyle([
+        ('BACKGROUND',  (0, 0), (-1, 0), TABLE_HEADER),
+        ('TEXTCOLOR',   (0, 0), (-1, 0), WHITE),
+        ('FONTNAME',    (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE',    (0, 0), (-1, -1), 8.5),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [WHITE, TABLE_ROW_ALT]),
+        ('GRID',        (0, 0), (-1, -1), 0.4, TABLE_BORDER),
+        ('VALIGN',      (0, 0), (-1, -1), 'TOP'),
+        ('PADDING',     (0, 0), (-1, -1), 5),
+    ]))
+    story.append(t)
+    story.append(Spacer(1, 0.3 * cm))
+    story.append(Paragraph(
+        "Les adresses e-mail des utilisateurs sont <b>masquées</b> dans le panneau (RGPD) : "
+        "seuls les 2 premiers caractères et le TLD sont affichés (ex. <code>ol***@g***.com</code>). "
+        "Sur mobile (≤ 520 px), la modale s'affiche en <b>bottom sheet</b> (remonte du bas de l'écran) ; "
+        "chaque ligne utilisateur adopte une disposition verticale.",
+        S['Body']))
+
+    # ── 11. Déploiement ──────────────────────────────────────────────────────
+    story += section_header("11. Déploiement")
     story.append(Paragraph(
         "L'application est conteneurisée (Docker). Le conteneur <b>web-nathanael-api</b> "
         "sert à la fois l'API et les fichiers statiques (index.html, reset-password.html) "
@@ -414,11 +448,11 @@ def build_site_doc():
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def build_api_doc():
-    path = "/Users/kurisu/Documents/Visual Code/docs/DOC_API_v1.22.3.pdf"
+    path = "/Users/kurisu/Documents/Visual Code/docs/DOC_API_v1.22.7.pdf"
     doc  = make_doc(path,
                     "Board de Nathanaël — Documentation API",
                     "Documentation technique — Back-end Node.js / Express",
-                    "v 1.22.3")
+                    "v 1.22.7")
 
     S = STYLES
     story = []
@@ -430,7 +464,7 @@ def build_api_doc():
         ["Projet",      "Board de Nathanaël"],
         ["Runtime",     "Node.js 18 (LTS)"],
         ["Framework",   "Express 4.x"],
-        ["Version API", "1.22.3"],
+        ["Version API", "1.22.7"],
         ["Port",        "3000"],
         ["Base URL",    "https://board.kurisu-no-okoku.com"],
         ["Date création", DATE_CREATION],
@@ -538,6 +572,7 @@ def build_api_doc():
         ["/api/buttons",                "POST",    "Admin",     "MERGE des libellés de boutons (transactionnel)",  "{ message }"],
         ["/api/users",                  "GET",     "Admin",     "Liste complète des utilisateurs",                 "Array[User]"],
         ["/api/users/toggle-active",    "POST",    "Admin",     "Toggle MotDePasseIsActive (activer/désactiver)",  "{ message }"],
+        ["/api/docs/site",              "GET",     "Admin",     "Télécharge la dernière version du DOC_SITE PDF",  "application/pdf"],
         ["/api/request-reset",          "POST",    "Admin",     "Force reset MDP + envoi e-mail",                  "{ message }"],
         ["/api/import-csv",             "POST",    "Admin",     "Import CSV de séances (transactionnel)",          "{ message }"],
         ["/api/orthophoniste",          "POST",    "Admin",     "Ajout manuel d'une séance",                       "{ message }"],

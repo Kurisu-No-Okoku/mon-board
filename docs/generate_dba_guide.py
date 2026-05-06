@@ -32,11 +32,11 @@ FOOTER   = colors.HexColor('#2B5280')
 W, H = A4
 M = 1.8 * cm
 
-AUTHOR        = "Kurisu-No-Okoku"
+AUTHOR        = "Christophe Lambert"
 DATE_CREATE   = "2026-05-06"
 DATE_MODIF    = "2026-05-06"
-VERSION       = "v 1.22.4"
-VERSION_LABEL = "v1.22.4"
+VERSION       = "v 1.22.5"
+VERSION_LABEL = "v1.22.5"
 
 # ── Styles ────────────────────────────────────────────────────────────────────
 def mk_styles():
@@ -98,7 +98,7 @@ def make_doc(path):
     doc = SimpleDocTemplate(path, pagesize=A4,
         leftMargin=M, rightMargin=M, topMargin=3.2*cm, bottomMargin=1.5*cm)
     doc._title = "Board de Nathanaël — Guide pratique DBA"
-    doc._sub   = "WEB_NATHANAEL · 4 axes d'amélioration · v1.22.4"
+    doc._sub   = "WEB_NATHANAEL · 4 axes d'amélioration · v1.22.5"
     return doc
 
 def sec(title, level=1):
@@ -143,7 +143,7 @@ def tbl(rows, widths, head=True):
 
 # ─────────────────────────────────────────────────────────────────────────────
 def build():
-    path = "/Users/kurisu/Documents/Visual Code/docs/DOC_DBA_GUIDE_v1.22.4.pdf"
+    path = "/Users/kurisu/Documents/Visual Code/docs/DOC_DBA_GUIDE_v1.22.5.pdf"
     doc  = make_doc(path)
     story = []
 
@@ -214,13 +214,13 @@ def build():
         GREEN_BG, colors.HexColor('#155724')))
     story.append(Paragraph(
         "Le script vérifie si l'index existe déjà avant de le créer. "
-        "Tu peux le relancer sans risque.",
+        "Il peut être exécuté plusieurs fois sans risque (idempotent).",
         S['Body']))
 
     story += sec("1.4  Règle pour la suite", level=2)
     story.append(Paragraph(
-        "Chaque fois que tu ajoutes une nouvelle table et que tu filtres fréquemment "
-        "sur une colonne autre que la PK → crée un index NONCLUSTERED sur cette colonne.",
+        "Pour chaque nouvelle table, si les requêtes filtrent fréquemment sur une colonne "
+        "autre que la PK, il convient de créer un index NONCLUSTERED sur cette colonne.",
         S['Body']))
 
     # ── 2. PERMISSIONS ────────────────────────────────────────────────────────
@@ -243,7 +243,7 @@ def build():
     rows = [
         ["Login", "Utilisé par", "Droits", "Quand s'en servir"],
         ["sa",
-         "Toi (DBA)",
+         "L'administrateur (DBA)",
          "Tout — DROP TABLE, CREATE, BACKUP…",
          "SSMS, scripts de maintenance, urgences"],
         ["web_nathanael_app",
@@ -255,7 +255,7 @@ def build():
     story.append(Spacer(1, 0.2*cm))
     story.append(Paragraph(
         "<b>sa ne disparaît pas.</b> Les deux logins coexistent. "
-        "Tu utilises toujours sa pour administrer la base depuis SSMS.",
+        "L'administrateur (DBA) utilise sa pour toutes les opérations d'administration depuis SSMS.",
         S['Body']))
 
     story += sec("2.3  Droits accordés à web_nathanael_app", level=2)
@@ -273,7 +273,7 @@ def build():
 
     story += sec("2.4  Créer un user encore plus limité (exemple)", level=2)
     story.append(Paragraph(
-        "Tu peux créer autant de logins que tu veux. "
+        "Il est possible de créer autant de logins que nécessaire. "
         "Exemple : un login <b>lecture seule sur Orthophoniste</b> pour un partenaire externe :",
         S['Body']))
     story.append(Paragraph(
@@ -432,8 +432,8 @@ def build():
         GREEN_BG, colors.HexColor('#155724')))
     story.append(Spacer(1, 0.15*cm))
     story.append(Paragraph(
-        "Observe la différence avant/après l'exécution de <code>sql/01_indexes.sql</code>. "
-        "C'est le meilleur exercice pratique pour comprendre l'impact des index.",
+        "En exécutant <code>sql/01_indexes.sql</code> puis les requêtes de ce script, "
+        "il est possible d'observer concrètement l'impact des index sur les performances.",
         S['Body']))
 
     # ── Checklist finale ──────────────────────────────────────────────────────
